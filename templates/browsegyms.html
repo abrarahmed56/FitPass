@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block headcontent %}
+<style>
+  .scroll-pane
+  {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  }
+</style>
+{% endblock headcontent %}
+{% block bodycontent %}
+<h2 style="color:white"><u>Browse Gyms</u></h2>
+<table width="100%">
+  <tr>
+    <td width="50%">
+      <div id="map-canvas" style="width:500px; height:500px;"></div>
+    </td>
+    <td style="color:white; height:100%;">
+      <div class="scroll-pane">
+	<input id="weighttraining" type="checkbox" checked>Weight Training</input>
+	<br>
+	<input id="endurance" type="checkbox" checked>Endurance</input>
+	<br>
+	<input id="yoga" type="checkbox" checked>Yoga/Pilates</input>
+	<br>
+	<button onclick='filter()'>Filter</button>
+	<br>
+	Please select a gym
+	<br>
+	<div id="gymInfo"></div>
+      </div>
+    </td>
+  </tr>
+</table>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="/static/scripts/browsegyms.js"></script>
+AIzaSyCEx5q1pE1dPVNR7GwjWfCGSRHteZIgieY
+{% endblock bodycontent %}
