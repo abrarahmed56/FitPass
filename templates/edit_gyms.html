@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block bodycontent %}
+<table>
+  <tr>
+    <td>
+      <div id="map-canvas" style="width:500px; height:500px;"></div>
+    </td>
+    <td>
+      <div style="color:white">Select one of your gyms to update information</div>
+      <button onclick="viewYourGyms()">View Your Gyms</button>
+      <div id="editamenities" style="color:white"></div>
+    </td>
+  </tr>
+</table>
+<script>
+gymName="{{gymName}}";
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="/static/scripts/edit_gyms.js"></script>
+{% endblock bodycontent %}

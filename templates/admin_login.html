@@ -1,2 +1,14 @@
+{% extends "base.html" %}
+{% block bodycontent %}
 Hello, admin!
 After logging in, you will be able to become a verified user on our site, and can add specific information, such as your amenities or promo codes!
+<br>
+<br>
+<form method="POST">
+<input type="text" placeholder="Username"></input>
+<br>
+<input type="password" placeholder="Password"></input>
+<br>
+<input type="submit"></submit>
+</form>
+{% endblock bodycontent %}
