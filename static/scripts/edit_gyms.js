@@ -86,5 +86,24 @@ var addGym = function() {
     })
 	.done(function(data) {
 	    console.log(data);
+	    if (data==="Gym added!") {
+		document.getElementById("markerbutton").innerHTML = "Remove from your Gyms";
+		document.getElementById("markerbutton").onclick = removeGym;
+	    }
 	});
+}
+var removeGym = function() {
+    $.post("/api/removegym", {"x": document.getElementById("x").value,
+			      "y": document.getElementById("y").value
+    })
+	.done(function(data) {
+	    console.log(data);
+	    if (data==="Gym deleted!") {
+		document.getElementById("markerbutton").innerHTML = "Add to your Gyms";
+		document.getElementById("markerbutton").onclick = addGym;
+	    }
+	    else {
+		console.log("HI");
+	    }
+ 	});
 }

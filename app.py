@@ -99,9 +99,9 @@ def get_details():
         c.execute("SELECT * FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s LIMIT 1", (user, x, y))
         s = c.fetchone()
         if s == None:
-            data['button'] = "<button onclick='addGym()'>Add to your Gyms</button>"
+            data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
         else:
-            data['button'] = "<button onclick='removeGym()'>Remove from your Gyms</button>"
+            data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
     return json.dumps(data)
 
 @app.route('/api/addgym', methods=['POST'])
@@ -130,8 +130,8 @@ def remove_gym():
             user = session['user']
             x = request.form['x']
             y = request.form['y']
-            c.execute("DELETE FROM Gyms WHERE User=%s, AND LatX=%s, AND LatY=%s", (user, x, y) )
-            return "Gym added!"
+            c.execute("DELETE FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s", (user, x, y) )
+            return "Gym deleted!"
         return "Database Error"
     return "Malformed request"
 
