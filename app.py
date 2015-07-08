@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import urllib2
 import json
 import MySQLdb
 
 app = Flask(__name__)
+app.secret_key = "a"
 
 try:
     con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
@@ -47,7 +48,8 @@ def admin_login():
             s = c.fetchone()
             if s == None:
                 #TODO use flash
-                return "Credentials incorrect"
+                flash("Credentials incorrect")
+                return redirect(url_for("admin_login"))
             return render_template("admin_loggedin.html", admin="admin")
     return render_template("admin_login.html")
 

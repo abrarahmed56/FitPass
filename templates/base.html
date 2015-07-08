@@ -4,10 +4,19 @@
     {% block headcontent %}
     {% endblock headcontent %}
   </head>
-  <body style="background-color: black;">
+  <body style="background-color: black; color:white">
     <header>
       <h1 style="color:white">Fitpass</h1>
     </header>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
     {% block bodycontent %}
     {% endblock bodycontent %}
   </body>
