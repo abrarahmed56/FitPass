@@ -56,10 +56,14 @@ var createMarker = function(place) {
 			console.log(jsondata);
 			data = JSON.parse(jsondata);
 			infowindow.setContent("<b>" + place.name + "</b>" + "<br>Website: <a href='" + data['website'] + "'>" + data['website'] + "</a><br>Phone: " + data['phone']);
-			document.getElementById("editamenities").innerHTML = "<h2>Amenities:</h2><br>Equipment:<input type='text'><br>Requirements:<input type='text'><br>Misc/Extras:<input type='text'><input type='submit' value='Update'>"
+			document.getElementById("editamenities").innerHTML = "<h2>Amenities:</h2><br>Equipment:<input id='equipment' type='text'><button onclick='updateInfo(&quot;equipment&quot;)'>Update</button><br>Requirements:<input id='requirements' type='text'><button onclick='updateInfo(&quot;requirements&quot;)'>Update</button><br>Misc/Extras:<input id='misc' type='text'><button onclick='updateInfo(&quot;misc&quot;)'>Update</button>"
 		    })
 	    }
 	});
 	infowindow.open(map, this);
     });
+}
+var updateInfo = function(id) {
+    var updateValue = document.getElementById(id).value
+    console.log("updateValue: " + updateValue);
 }
