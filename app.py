@@ -15,7 +15,7 @@ try:
     c.execute("INSERT INTO Users VALUES('test2', 'test2', 'Golds Gym')")
     c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
     c.execute("DROP TABLE IF EXISTS Gyms")
-    c.execute("CREATE TABLE Gyms(User VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION)")
+    c.execute("CREATE TABLE Gyms(User VARCHAR(50), PlaceId VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION)")
     c.execute("SELECT * FROM Users")
     print c.fetchall()
     con.commit()
@@ -94,9 +94,8 @@ def get_details():
     with con:
         c = con.cursor()
         user = session['user']
-        x = request.form['x']
-        y = request.form['y']
-        c.execute("SELECT * FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s LIMIT 1", (user, x, y))
+        id = request.form['id']
+        c.execute("SELECT * FROM Gyms WHERE User=%s AND PlaceId=%s LIMIT 1", (user, id))
         s = c.fetchone()
         if s == None:
             data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
@@ -111,11 +110,12 @@ def add_gym():
         with con:
             c = con.cursor()
             user = session['user']
-            x = request.form['x']
-            y = request.form['y']
-            c.execute("SELECT * FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s LIMIT 1", (user, x, y))
+            id = request.form['id']
+            c.execute("SELECT * FROM Gyms WHERE User=%s AND PlaceId=%s LIMIT 1", (user, id))
             if c.fetchone()==None:
-                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s)", (user, x, y) )
+                x = request.form['x']
+                y = request.form['y']
+                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s)", (user, id, x, y) )
                 return "Gym added!"
             return "Gym Already in your Gyms"
         return "Database Error"
@@ -128,12 +128,25 @@ def remove_gym():
         with con:
             c = con.cursor()
             user = session['user']
-            x = request.form['x']
-            y = request.form['y']
-            c.execute("DELETE FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s", (user, x, y) )
+            place_id = request.form['placeId']
+            c.execute("DELETE FROM Gyms WHERE User=%s AND PlaceId=%s", (user, place_id) )
             return "Gym deleted!"
         return "Database Error"
     return "Malformed request"
+
+@app.route('/api/getgyms', methods=['POST'])
+def get_gyms():
+    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    with con:
+        c = con.cursor()
+        user = session['user']
+        data = []
+        c.execute("SELECT PlaceId FROM Gyms WHERE User=%s", (user,))
+        results = c.fetchall()
+        for result in results:
+            data.append(result[0]);
+        return json.dumps(data)
+    return "Error"
 
 if __name__ == '__main__':
     app.debug = True
