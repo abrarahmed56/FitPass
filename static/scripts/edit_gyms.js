@@ -11,21 +11,20 @@ if (navigator.geolocation) {
 	};
 	map = new google.maps.Map($("#map-canvas")[0], mapOptions);
 	infowindow = new google.maps.InfoWindow();
-	showGyms()
+	showGyms();
     });
 };
 var showGyms = function() {
     console.log("show");
     var request1 = {
 	location: myLatlng,
-	radius: 1000,
 	keyword: 'gym',
 	//types: ['gym']
     };
     var request2 = {
 	location: myLatlng,
 	radius: 10000,
-	keyword: 'blink fitness',
+	keyword: gymName,
 	//types: ['gym']
     };
     var service = new google.maps.places.PlacesService(map);
@@ -46,7 +45,7 @@ var createMarker = function(place) {
 	position: place.geometry.location
     });
     google.maps.event.addListener(marker, 'click', function() {
-	infowindow.setContent("Loading");
+	infowindow.setContent("<div style='color:black'>Loading</div>");
 	var request = {placeId: place.place_id};
 	var service = new google.maps.places.PlacesService(map);
 	service.getDetails(request, function(place, status) {
@@ -55,7 +54,7 @@ var createMarker = function(place) {
 		    .done(function(jsondata) {
 			console.log(jsondata);
 			data = JSON.parse(jsondata);
-			infowindow.setContent("<b>" + place.name + "</b>" + "<br>Website: <a href='" + data['website'] + "'>" + data['website'] + "</a><br>Phone: " + data['phone']);
+			infowindow.setContent("<div style='color:black'><b>" + place.name + "</b>" + "<br>Website: <a href='" + data['website'] + "'>" + data['website'] + "</a><br>Phone: " + data['phone'] + "</div>");
 			document.getElementById("editamenities").innerHTML = "<h2>Amenities:</h2><br>Equipment:<input id='equipment' type='text'><button onclick='updateInfo(&quot;equipment&quot;)'>Update</button><br>Requirements:<input id='requirements' type='text'><button onclick='updateInfo(&quot;requirements&quot;)'>Update</button><br>Misc/Extras:<input id='misc' type='text'><button onclick='updateInfo(&quot;misc&quot;)'>Update</button>"
 		    })
 	    }

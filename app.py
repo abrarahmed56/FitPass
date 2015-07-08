@@ -10,10 +10,10 @@ try:
     con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
     c = con.cursor()
     c.execute("DROP TABLE IF EXISTS Users")
-    c.execute("CREATE TABLE Users( User VARCHAR(50), Password VARCHAR(50))")
-    c.execute("INSERT INTO Users VALUES('test1', 'test1')")
-    c.execute("INSERT INTO Users VALUES('test2', 'test2')")
-    c.execute("INSERT INTO Users VALUES('test3', 'test3')")
+    c.execute("CREATE TABLE Users( User VARCHAR(50), Password VARCHAR(50), Gym VARCHAR(25))")
+    c.execute("INSERT INTO Users VALUES('test1', 'test1', 'Blink Fitness')")
+    c.execute("INSERT INTO Users VALUES('test2', 'test2', 'Golds Gym')")
+    c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
     c.execute("SELECT * FROM Users")
     print c.fetchall()
     con.commit()
@@ -50,13 +50,29 @@ def admin_login():
                 #TODO use flash
                 flash("Credentials incorrect")
                 return redirect(url_for("admin_login"))
-            return render_template("admin_loggedin.html", admin="admin")
+            session['user'] = user
+            return render_template("admin_loggedin.html", admin=user)
     return render_template("admin_login.html")
 
 @app.route('/editgyms')
 def edit_gyms():
-    #TODO use gymname based on user, add gym column to database
-    return render_template("edit_gyms.html", gymName="Blink Fitness")
+    if 'user' in session:
+        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        with con:
+            c = con.cursor()
+            user = session['user']
+            c.execute("SELECT GYM FROM Users WHERE User=%s LIMIT 1", (user,))
+            s = c.fetchone()
+            print "s: " + s[0]
+        return render_template("edit_gyms.html", gymName=s[0])
+    else:
+        flash("You have to log in before accessing this page")
+        return redirect(url_for('admin_login'))
+
+@app.route('/logout')
+def logout():
+    session.pop('user')
+    return redirect(url_for('index'))
 
 @app.route('/api/getDetails', methods=['POST'])
 def get_details():
