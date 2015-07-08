@@ -10,10 +10,12 @@ try:
     con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
     c = con.cursor()
     c.execute("DROP TABLE IF EXISTS Users")
-    c.execute("CREATE TABLE Users( User VARCHAR(50), Password VARCHAR(50), Gym VARCHAR(25))")
+    c.execute("CREATE TABLE Users(User VARCHAR(50), Password VARCHAR(50), Gym VARCHAR(50))")
     c.execute("INSERT INTO Users VALUES('test1', 'test1', 'Blink Fitness')")
     c.execute("INSERT INTO Users VALUES('test2', 'test2', 'Golds Gym')")
     c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
+    c.execute("DROP TABLE IF EXISTS Gyms")
+    c.execute("CREATE TABLE Gyms(User VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION)")
     c.execute("SELECT * FROM Users")
     print c.fetchall()
     con.commit()
@@ -88,11 +90,50 @@ def get_details():
         data['phone'] = d['formatted_phone_number']
     else:
         data['phone'] = "Not available"
+    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    with con:
+        c = con.cursor()
+        user = session['user']
+        x = request.form['x']
+        y = request.form['y']
+        c.execute("SELECT * FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s LIMIT 1", (user, x, y))
+        s = c.fetchone()
+        if s == None:
+            data['button'] = "<button onclick='addGym()'>Add to your Gyms</button>"
+        else:
+            data['button'] = "<button onclick='removeGym()'>Remove from your Gyms</button>"
     return json.dumps(data)
 
 @app.route('/api/addgym', methods=['POST'])
 def add_gym():
-    return "Gym added!"
+    if request.method=='POST':
+        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        with con:
+            c = con.cursor()
+            user = session['user']
+            x = request.form['x']
+            y = request.form['y']
+            c.execute("SELECT * FROM Gyms WHERE User=%s AND LatX=%s AND LatY=%s LIMIT 1", (user, x, y))
+            if c.fetchone()==None:
+                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s)", (user, x, y) )
+                return "Gym added!"
+            return "Gym Already in your Gyms"
+        return "Database Error"
+    return "Malformed request"
+
+@app.route('/api/removegym', methods=['POST'])
+def remove_gym():
+    if request.method=='POST':
+        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        with con:
+            c = con.cursor()
+            user = session['user']
+            x = request.form['x']
+            y = request.form['y']
+            c.execute("DELETE FROM Gyms WHERE User=%s, AND LatX=%s, AND LatY=%s", (user, x, y) )
+            return "Gym added!"
+        return "Database Error"
+    return "Malformed request"
 
 if __name__ == '__main__':
     app.debug = True
