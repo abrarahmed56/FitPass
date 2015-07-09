@@ -1,6 +1,82 @@
 {% extends "base.html" %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    <li>
+      <a href="#about">About</a>
+    </li>
+    <li>
+      <a href="#services">Services</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+  </ul>
+</div>
+{% endblock navcontent %}
+
 {% block bodycontent %}
-Find the right gym for you
+<a name="about"></a>
+<div class="intro-header">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+	<div class="intro-message">
+	  <h1>Pingyms</h1>
+	  <h3>Find the right gym for you</h3>
+	  <hr class="intro-divider">
+	  <ul class="list-inline intro-social-buttons">
+	    <li>
+	      <a href="https://twitter.com/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
+	    </li>
+	    <li>
+	      <a href="https://github.com/abrarahmed56/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+	    </li>
+	  </ul>
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a name="services"></a>
+<div class="content-section-a">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-5 col-sm-6">
+	<hr class="section-heading-spacer">
+	<div class="clearfix"></div>
+	<h2 class="section-heading">Finally, an easy way to see what's in your gyms:</h2>
+	<p class="lead">Easily view amenities for gyms in your area</p>
+      </div>
+      <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+	<img class="img-responsive" src="" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+
+<a  name="contact"></a>
+<div class="banner">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <h2>Connect with Pingyms:</h2>
+      </div>
+      <div class="col-lg-6">
+        <ul class="list-inline banner-social-buttons">
+          <li>
+            <a href="https://twitter.com/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
+          </li>
+          <li>
+            <a href="https://github.com/abrarahmed56/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <br>
 <a href="/browsegyms">Click here to browse gyms</a>
 <br>
