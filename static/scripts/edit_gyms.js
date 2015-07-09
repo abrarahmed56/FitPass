@@ -48,6 +48,7 @@ var createMarker = function(place) {
 	infowindow.setContent("<div style='color:black'>Loading</div>");
 	var request = {placeId: place.place_id};
 	var service = new google.maps.places.PlacesService(map);
+	console.log(place);
 	service.getDetails(request, function(place, status) {
 	    if (status == google.maps.places.PlacesServiceStatus.OK) {
 		$.post("/api/getDetails", {"url": "https://maps.googleapis.com/maps/api/place/details/json?placeid=" + place.place_id + "&key=AIzaSyCEx5q1pE1dPVNR7GwjWfCGSRHteZIgieY",
@@ -57,7 +58,7 @@ var createMarker = function(place) {
 			console.log(jsondata);
 			data = JSON.parse(jsondata);
 			infowindow.setContent("<div style='color:black'><b>" + place.name + "</b>" + "<br>Website: <a href='" + data['website'] + "'>" + data['website'] + "</a><br>Phone: " + data['phone'] + "<br>" + data['button'] + "</div><input type='hidden' id='x' value=" + marker['position']['A'] + "><input type='hidden' id='y' value=" + marker['position']['F'] + "><input type='hidden' id='placeId' value=" + place.place_id + ">");
-			document.getElementById("editamenities").innerHTML = "<h2>Amenities:</h2><br>Equipment:<input id='equipment' type='text'><button onclick='updateInfo(&quot;equipment&quot;)'>Update</button><br>Requirements:<input id='requirements' type='text'><button onclick='updateInfo(&quot;requirements&quot;)'>Update</button><br>Misc/Extras:<input id='misc' type='text'><button onclick='updateInfo(&quot;misc&quot;)'>Update</button>"
+			document.getElementById("editamenities").innerHTML = "<h2>Amenities:</h2><br>Equipment:<input id='Equipment' type='text' value='" + data['equipment'] + "'><button onclick='updateInfo(&quot;Equipment&quot;)'>Update</button><br>Requirements:<input id='Requirements' type='text' value='" + data['requirements'] + "'><button onclick='updateInfo(&quot;Requirements&quot;)'>Update</button><br>Misc/Extras:<input id='Misc' type='text' value='" + data['misc'] + "'><button onclick='updateInfo(&quot;Misc&quot;)'>Update</button>"
 		    })
 	    }
 	});
@@ -70,7 +71,15 @@ var clearMarkers = function() {
     }
 }
 var updateInfo = function(id) {
-    var updateValue = document.getElementById(id).value
+    var updateValue = document.getElementById(id).value;
+    $.post("/api/updateinfo", {
+	"placeId": document.getElementById("placeId").value,
+	"type": id,
+	"text": document.getElementById(id).value
+    })
+	   .done(function(data) {
+	       console.log(data);
+	   })
 }
 var search = function() {
     var query = document.getElementById("search").value;
@@ -109,6 +118,7 @@ var removeGym = function() {
 }
 var viewYourGyms = function() {
     clearMarkers();
+    //TODO MAYBE- when gym removed, remove marker as well
     $.post("/api/getgyms")
 	.done(function(jsondata) {
 	    console.log(jsondata);

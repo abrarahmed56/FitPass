@@ -14,8 +14,8 @@ try:
     c.execute("INSERT INTO Users VALUES('test1', 'test1', 'Blink Fitness')")
     c.execute("INSERT INTO Users VALUES('test2', 'test2', 'Golds Gym')")
     c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
-    c.execute("DROP TABLE IF EXISTS Gyms")
-    c.execute("CREATE TABLE Gyms(User VARCHAR(50), PlaceId VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION)")
+    #c.execute("DROP TABLE IF EXISTS Gyms")
+    #c.execute("CREATE TABLE Gyms(User VARCHAR(50), PlaceId VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION, Equipment VARCHAR(1000), Requirements VARCHAR(1000), Misc VARCHAR(1000))")
     c.execute("SELECT * FROM Users")
     print c.fetchall()
     con.commit()
@@ -100,6 +100,9 @@ def get_details():
         if s == None:
             data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
         else:
+            data['equipment'] = s[4]
+            data['requirements'] = s[5]
+            data['misc'] = s[6]
             data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
     return json.dumps(data)
 
@@ -115,7 +118,7 @@ def add_gym():
             if c.fetchone()==None:
                 x = request.form['x']
                 y = request.form['y']
-                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s)", (user, id, x, y) )
+                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s, '', '', '')", (user, id, x, y) )
                 return "Gym added!"
             return "Gym Already in your Gyms"
         return "Database Error"
@@ -147,6 +150,20 @@ def get_gyms():
             data.append(result[0]);
         return json.dumps(data)
     return "Error"
+
+@app.route('/api/updateinfo', methods=['POST'])
+def update_info():
+    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    with con:
+        c = con.cursor()
+        user = session['user']
+        infotype = request.form['type']
+        info = request.form['text']
+        place_id = request.form['placeId']
+        if infotype != "Equipment" and infotype != "Requirements" and infotype != "Misc":
+            return "bruh stop screwing with the system"
+        c.execute("UPDATE Gyms SET " + infotype + "=%s WHERE User=%s AND PlaceId=%s", (info, user, place_id))
+        return "Update successful!"
 
 if __name__ == '__main__':
     app.debug = True
