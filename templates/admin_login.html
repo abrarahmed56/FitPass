@@ -1,14 +1,43 @@
 {% extends "base.html" %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    <li>
+      <a href="/browsegyms">Browse Gyms</a>
+    </li>
+    <li>
+      <a href="#about">About</a>
+    </li>
+    <li>
+      <a href="#services">Services</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+  </ul>
+</div>
+{% endblock navcontent %}
+
 {% block bodycontent %}
-Hello, admin!
-After logging in, you will be able to become a verified user on our site, and can add specific information, such as your amenities or promo codes!
-<br>
-<br>
-<form method="POST">
-<input name="user" type="text" placeholder="Username"></input>
-<br>
-<input name="password" type="password" placeholder="Password"></input>
-<br>
-<input type="submit"></submit>
-</form>
+<div class="content-section-a">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-5 col-sm-6">
+	<hr class="section-heading-spacer">
+	<div class="clearfix"></div>
+	Hello, gym owner!
+	After logging in, you will be able to become a verified user on our site, and can add specific information, such as your amenities or promo codes!
+	<br>
+	<br>
+	<form method="POST">
+	  <input name="user" type="text" placeholder="Username">
+	  <br>
+	  <input name="password" type="password" placeholder="Password">
+	  <br>
+	  <input type="submit">
+	</form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock bodycontent %}

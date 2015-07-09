@@ -1,12 +1,42 @@
 {% extends "base.html" %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    <li>
+      <a href="/editgyms">Edit Your Gyms</a>
+    </li>
+    <li>
+      <a href="#about">About</a>
+    </li>
+    <li>
+      <a href="#services">Services</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+    <li>
+      <a href="/logout">Logout</a>
+    </li>
+  </ul>
+</div>
+{% endblock navcontent %}
+
 {% block bodycontent %}
-<div style="color:white">
-Hello, {{admin}}!
-<br>
-Welcome to Pingyms! We are glad you registered with us.
-<br>
-<a href="/editgyms">Click here to view your gyms and add information</a>
-<br>
-<a href="/logout">Logout</a>
+<div class="content-section-a">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-5 col-sm-6">
+	<hr class="section-heading-spacer">
+	<div class="clearfix"></div>
+	Hello, {{admin}}!
+	<br>
+	Welcome to Pingyms! We are glad you registered with us.
+	<br>
+	<a href="/editgyms">Click here to view your gyms and add information</a>
+	<br>
+	<a href="/logout">Logout</a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock bodycontent %}

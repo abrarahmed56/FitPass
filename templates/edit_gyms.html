@@ -1,24 +1,52 @@
 {% extends "base.html" %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    <li>
+      <a href="#about">About</a>
+    </li>
+    <li>
+      <a href="#services">Services</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+    <li>
+      <a href="/logout">Logout</a>
+    </li>
+  </ul>
+</div>
+{% endblock navcontent %}
+
 {% block bodycontent %}
-<table>
-  <tr>
-    <td>
-      <div id="map-canvas" style="width:500px; height:500px;"></div>
-    </td>
-    <td>
-      Select one of your gyms to update information
-      <br>
-      You can start by searching for your gym: <input id="search" type="text" placeholder="{{gymName}}" value="{{gymName}}"><button onclick="search()">Search</button>
-      <br>
-      <!--should we let user add random marker? or use google maps-->
-      <!--If you don't see it, you can <button id="addmarker" onclick="addMarker()">Add a Marker Yourself</button>
-      <br>-->
-      <button onclick="viewYourGyms()">View Your Gyms</button>
-      <div id="editamenities"></div>
-    </td>
-  </tr>
-</table>
-<a href="/logout">Logout</a>
+<div class="content-section-a">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-5 col-sm-6">
+	<hr class="section-heading-spacer">
+	<div class="clearfix"></div>
+	<table>
+	  <tr>
+	    <td>
+	      <div id="map-canvas" style="width:500px; height:500px;"></div>
+	    </td>
+	    <td>
+	      Select one of your gyms to update information
+	      <br>
+	      You can start by searching for your gym: <input id="search" type="text" placeholder="{{gymName}}" value="{{gymName}}"><button onclick="search()">Search</button>
+	      <br>
+	      <!--should we let user add random marker? or use google maps-->
+	      <!--If you don't see it, you can <button id="addmarker" onclick="addMarker()">Add a Marker Yourself</button>
+		  <br>-->
+	      <button onclick="viewYourGyms()">View Your Gyms</button>
+	      <div id="editamenities"></div>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 var gymName="{{gymName}}";
 </script>
