@@ -66,17 +66,18 @@ var createMarker = function(place) {
 	position: place.geometry.location
     });
     google.maps.event.addListener(marker, 'click', function() {
-	infowindow.setContent("Loading");
+	infowindow.setContent("<div style='color:black'>Loading</div>");
 	var request = {placeId: place.place_id};
 	var service = new google.maps.places.PlacesService(map);
 	service.getDetails(request, function(place, status) {
 	    if (status == google.maps.places.PlacesServiceStatus.OK) {
-		$.post("/api/getDetails", {"url": "https://maps.googleapis.com/maps/api/place/details/json?placeid=" + place.place_id + "&key=AIzaSyCEx5q1pE1dPVNR7GwjWfCGSRHteZIgieY"})
+		$.post("/api/getDetails", {"url": "https://maps.googleapis.com/maps/api/place/details/json?placeid=" + place.place_id + "&key=AIzaSyCEx5q1pE1dPVNR7GwjWfCGSRHteZIgieY",
+					   "id": place.place_id})
 		    .done(function(jsondata) {
 			console.log(jsondata);
 			data = JSON.parse(jsondata);
-			infowindow.setContent("<b>" + place.name + "</b>" + "<br>Website: " + data['website'] + "<br>Phone: " + data['phone']);
-			document.getElementById("gymInfo").innerHTML = "<h1>" + place.name + "</h1><button onclick='getDirections(&quot;" + place.formatted_address + "&quot;)'>Directions</button>";
+			infowindow.setContent("<div style='color:black'><b>" + place.name + "</b>" + "<br>Website: " + data['website'] + "<br>Phone: " + data['phone'] + "</div>");
+			document.getElementById("gymInfo").innerHTML = "<h1>" + place.name + "</h1><h2>Equipment:</h2>" + data['equipment'] + "<h2>Requirements:</h2>" + data['requirements'] + "<h2>Miscellaneous/Extras:</h2>" + data['misc'] + "<br><button onclick='getDirections(&quot;" + place.formatted_address + "&quot;)'>Directions</button>";
 		    })
 	    }
 	});

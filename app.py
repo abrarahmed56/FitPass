@@ -93,17 +93,24 @@ def get_details():
     con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
     with con:
         c = con.cursor()
-        user = session['user']
         id = request.form['id']
-        c.execute("SELECT * FROM Gyms WHERE User=%s AND PlaceId=%s LIMIT 1", (user, id))
+        c.execute("SELECT * FROM Gyms WHERE PlaceId=%s LIMIT 1", (id,))
         s = c.fetchone()
-        if s == None:
-            data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
-        else:
+        if 'user' in session:
+            user = session['user']
+            if s == None:
+                data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
+            else:
+                data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
+        if s != None:
             data['equipment'] = s[4]
             data['requirements'] = s[5]
             data['misc'] = s[6]
-            data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
+        else:
+            data['equipment'] = "Not available yet"
+            data['requirements'] = "Not available yet"
+            data['misc'] = "Not available yet"
+    print data
     return json.dumps(data)
 
 @app.route('/api/addgym', methods=['POST'])
