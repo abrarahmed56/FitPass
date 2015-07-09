@@ -20,14 +20,27 @@ var getDirections = function(destination) {
 };
 var showGyms = function() {
     console.log("show");
+    //console.log(gyms);
     var request = {
 	location: myLatlng,
-	radius: 1000,
+	radius: 10000,
 	keyword: 'gym',
 	//types: ['gym']
     };
     var service = new google.maps.places.PlacesService(map);
     service.nearbySearch(request, callback);
+    $.post("/api/getallgyms")
+	.done(function(jsondata) {
+	    console.log(jsondata);
+	    data = JSON.parse(jsondata);
+	    for (var i=0; i<data.length; i++) {
+		var request = {
+		    placeId: data[i]
+		}
+		var service = new google.maps.places.PlacesService(map);
+		service.getDetails(request, callback2);
+	    }
+	});
 }
 var filter = function() {
     console.log("filter");
@@ -44,7 +57,7 @@ var filter = function() {
     console.log(keyword);
     var request = {
 	location: myLatlng,
-	radius: 1000,
+	radius: 10000,
 	keyword: 'gym',
 	//types: ['gym']
     };
@@ -57,6 +70,11 @@ var callback = function(results, status) {
 	for (var i = 0; i < results.length; i++) {
 	    createMarker(results[i]);
 	}
+    }
+}
+var callback2 = function(place, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+	createMarker(place);
     }
 }
 var createMarker = function(place) {

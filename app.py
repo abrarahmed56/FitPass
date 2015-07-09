@@ -158,6 +158,19 @@ def get_gyms():
         return json.dumps(data)
     return "Error"
 
+@app.route('/api/getallgyms', methods=['POST'])
+def get_all_gyms():
+    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    with con:
+        c = con.cursor()
+        data = []
+        c.execute("SELECT PlaceId FROM Gyms")
+        results = c.fetchall()
+        for result in results:
+            data.append(result[0]);
+        return json.dumps(data)
+    return "Error"
+
 @app.route('/api/updateinfo', methods=['POST'])
 def update_info():
     con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
