@@ -137,3 +137,31 @@ var callback2 = function(place, status) {
 	createMarker(place);
     }
 }
+var report = function() {
+    $.post("/api/report", {
+	"id": document.getElementById("placeId").value
+    })
+	.done(function(data) {
+	    console.log(data);
+	});
+}
+/*var addMarker = function() {
+    console.log("add marker");
+    var marker = new google.maps.Marker({
+	position: myLatlng,
+	draggable: true
+    });
+    markers.push(marker);
+    marker.setMap(map);
+    document.getElementById("addmarker").innerHTML = "Click to confirm location"
+    document.getElementById("addmarker").onclick = function() {markGym(marker)};
+}
+var markGym = function(marker) {
+    console.log("gym marked");
+    marker.draggable = false;
+    console.log(marker);
+    console.log(marker.internalPosition['A']);
+    console.log(marker.internalPosition['F']);
+    document.getElementById("addmarker").innerHTML = "Add a Marker Yourself";
+    document.getElementById("addmarker").onclick = addMarker;
+}*/

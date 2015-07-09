@@ -16,6 +16,8 @@ try:
     c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
     #c.execute("DROP TABLE IF EXISTS Gyms")
     #c.execute("CREATE TABLE Gyms(User VARCHAR(50), PlaceId VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION, Equipment VARCHAR(1000), Requirements VARCHAR(1000), Misc VARCHAR(1000))")
+    c.execute("DROP TABLE IF EXISTS Reports")
+    c.execute("CREATE TABLE Reports(User VARCHAR(50), PlaceId VARCHAR(50))")
     c.execute("SELECT * FROM Users")
     print c.fetchall()
     con.commit()
@@ -100,6 +102,8 @@ def get_details():
             user = session['user']
             if s == None:
                 data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
+            elif s[0] != user:
+                data['button'] = "This gym is registered with someone else. If you believe this is an error, please click <button onclick='report(&quot;" + user + "&quot;)'>here</button>"
             else:
                 data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
         if s != None:
@@ -184,6 +188,15 @@ def update_info():
             return "bruh stop screwing with the system"
         c.execute("UPDATE Gyms SET " + infotype + "=%s WHERE User=%s AND PlaceId=%s", (info, user, place_id))
         return "Update successful!"
+
+@app.route('/api/report', methods=['POST'])
+def report():
+    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    with con:
+        c = con.cursor()
+        user = session['user']
+        c.execute("INSERT INTO Reports VALUES(%s, %s)", (user, id))
+        return "Report successful"
 
 if __name__ == '__main__':
     app.debug = True
