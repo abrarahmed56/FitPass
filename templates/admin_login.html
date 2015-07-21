@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block headcontent %}
+<title>Login/Signup</title>
+{% endblock headcontent %}
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav navbar-right">
@@ -29,10 +32,23 @@
 	After logging in, you will be able to become a verified user on our site, and can add specific information, such as your amenities or promo codes!
 	<br>
 	<br>
-	<form method="POST">
-	  <input name="user" type="text" placeholder="Username">
+	<form method="POST" onsubmit="return validate('login')">
+	  <input id="email" name="email" type="text" placeholder="Email">
 	  <br>
-	  <input name="password" type="password" placeholder="Password">
+	  <input id="password" name="password" type="password" placeholder="Password">
+	  <br>
+	  <input type="submit">
+	</form>
+	<hr>
+	If you need to sign up for the first time, do so here
+	<form action="/signup" method="POST" onsubmit="return matchFields('email') && matchFields('password') && validate('signup')">
+	  <input id="email1" name="email" type="text" placeholder="Email">
+	  <br>
+	  <input id="email2" type="text" placeholder="Confirm Email">
+	  <br>
+	  <input id="password1" name="password" type="password" placeholder="Password">
+	  <br>
+	  <input id="password2" type="password" placeholder="Confirm Password">
 	  <br>
 	  <input type="submit">
 	</form>
@@ -40,4 +56,5 @@
     </div>
   </div>
 </div>
+<script src="/static/scripts/login.js"></script>
 {% endblock bodycontent %}

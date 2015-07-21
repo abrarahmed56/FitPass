@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block headcontent %}
+<title>Browse Gyms</title>
+<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+{% endblock headcontent %}
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <hr>
+      Please select your gym
+      <form action="/addgym" method="POST">
+      <div id="map" style="width:300px; height:300px;"></div>
+      Search for your gym: <input id="search" type="text"><button type="button" onclick="searchGyms()">Search</button>
+      <br>
+	<!--<input name="gymId" id="gymId" type="hidden">-->
+      <button type="submit">Select</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript">
+var takenGyms = {{takenGyms|tojson|safe}};
+</script>
+<script src="/static/scripts/select_gym.js"></script>
+{% endblock bodycontent %}

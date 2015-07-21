@@ -1,18 +1,18 @@
 {% extends "base.html" %}
+{% block headcontent %}
+<title>Pingyms</title>
+{% endblock headcontent %}
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav navbar-right">
     <li>
-      <a href="/browsegyms">Browse Gyms</a>
+      <a href="/gymadminlogin">Login for Gym Owners</a>
     </li>
     <li>
-      <a href="#about">About</a>
+      <a href="/about">About</a>
     </li>
     <li>
-      <a href="#services">Services</a>
-    </li>
-    <li>
-      <a href="#contact">Contact</a>
+      <a href="/contact">Contact</a>
     </li>
   </ul>
 </div>
@@ -26,14 +26,25 @@
       <div class="col-lg-12">
 	<div class="intro-message">
 	  <h1>Pingyms</h1>
-	  <h3>Find the right gym for you</h3>
+	  <h3>Pinpoint Your Gym</h3>
 	  <hr class="intro-divider">
 	  <ul class="list-inline intro-social-buttons">
 	    <li>
-	      <a href="https://twitter.com/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
+	      <a href="/browsegyms" class="btn btn-default btn-lg">Browse Gyms</a>
+	    </li>
+	    <br>
+	    <br>
+	    <li>
+	      <a href="https://twitter.com/Pingyms" class="btn btn-default btn-sm"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
 	    </li>
 	    <li>
-	      <a href="https://github.com/abrarahmed56/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
+	      <a href="https://www.facebook.com/pingyms" class="btn btn-default btn-sm"><i class="fa fa-facebook fa-fw"></i> <span class="network-name">Facebook</span></a>
+	    </li>
+	    <li>
+	      <a class="btn btn-default btn-sm"><i class="fa fa-instagram fa-fw"></i> <span class="network-name">Instagram</span></a>
+	    </li>
+	    <li>
+	      <a class="btn btn-default btn-sm"><i class="fa fa-pinterest fa-fw"></i> <span class="network-name">Pinterest</span></a>
 	    </li>
 	  </ul>
 	</div>
@@ -41,7 +52,7 @@
     </div>
   </div>
 </div>
-
+<!--
 <a name="services"></a>
 <div class="content-section-a">
   <div class="container">
@@ -96,6 +107,6 @@
     </div>
   </div>
 </div>
-
+-->
 <br>
 {% endblock bodycontent %}

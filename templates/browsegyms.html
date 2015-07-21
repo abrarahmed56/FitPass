@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block headcontent %}
+<title>Browse Gyms</title>
+<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
 <style>
   .scroll-pane
   {
@@ -9,31 +12,147 @@
   }
 </style>
 {% endblock headcontent %}
+
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    <li>
+      <a href="#about">About</a>
+    </li>
+    <li>
+      <a href="#services">Services</a>
+    </li>
+    <li>
+      <a href="#contact">Contact</a>
+    </li>
+  </ul>
+</div>
+{% endblock navcontent %}
+<!--
+when click on marker, only show name
+   when click on name, take to gym's page
+search results at bottom left:
+   hours, location, requirements/price (also unit- by class/month)
+verified- silver
+featured- gold- first/second results in search
+move/remove directions
+have pictures/videos in personalized gym pages
+map smaller, on top right
+user searches by amenities, price, radius
+find gyms near subways stations, for subways near where you live
+later, find gyms between work and home
+featured gyms are on homepage
+research for equipment
+background is http://burpeezoid.com/wp-content/uploads/2015/01/dmitri-2.jpg
+-->
+
 {% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
 <h2><u>Browse Gyms</u></h2>
-<table width="100%">
+<table style="width:100%">
   <tr>
-    <td width="50%">
-      <div id="map-canvas" style="width:500px; height:500px;"></div>
-    </td>
-    <td style="height:100%;">
+    <td style="width:75%">
       <div class="scroll-pane">
-	<input id="weighttraining" type="checkbox" checked>Weight Training</input>
 	<br>
-	<input id="endurance" type="checkbox" checked>Endurance</input>
-	<br>
-	<input id="yoga" type="checkbox" checked>Yoga/Pilates</input>
-	<br>
-	<button onclick='filter()'>Filter</button>
-	<br>
-	Please select a gym
-	<br>
+	Search for a gym
+	<table>
+	  <form method="POST">
+	  <tr>
+	    <td>By Price</td>
+	    <td>By Type</td>
+	    <td>By Equipment</td>
+	    <td>By Location</td>
+	  </tr>
+	  <tr>
+	    <td>
+	      <input type="radio" name="price" class="priceradio" value="15:month">&lt;$15 per month<br>
+	      <input type="radio" name="price" class="priceradio" value="50:month">&lt;$50 per month<br>
+	      <input type="radio" name="price" class="priceradio" value="100:month">&lt;$100 per month<br>
+	      <input type="radio" name="price" class="priceradio" value="10:class">&lt;$10 per class<br>
+	      <input type="radio" name="price" class="priceradio" value="25:class">&lt;$25 per class<br>
+	      <input type="radio" name="price" class="priceradio" value="50:class">&lt;$50 per class<br>
+	      <input type="radio" name="price" class="priceradio priceradioinput" value="permonth">&lt;<input name="permonthamount" class="permonthamount" type="text" size="3" disabled> per month<br>
+	      <input type="radio" name="price" class="priceradio priceradioinput" value="perclass">&lt;<input name="perclassamount" class="perclassamount" type="text" size="3" disabled> per class<br>
+	      <button type="button" onclick="clearSelection('priceradio')">Clear</button>
+	    </td>
+	    <td>
+	      <input type="radio" name="gymtype" class="typeradio" value="rec">Recreational Fitness<br>
+	      <input type="radio" name="gymtype" class="typeradio" value="yoga">Yoga/Pilates<br>
+	      <input type="radio" name="gymtype" class="typeradio" value="martial">Martial Arts<br>
+	      <input type="radio" name="gymtype" class="typeradio" value="xfit">Crossfit<br>
+	      <input type="radio" name="gymtype" class="typeradio" value="rock">Rock Climbing<br>
+	      <button type="button" onclick="clearSelection('typeradio')" >Clear</button>
+	    </td>
+	    <td>
+	      <input type="checkbox" class="equipmentradio" name="squat">Squat Rack<br>
+	      <input type="checkbox" class="equipmentradio" name="bench">Bench<br>
+	      <input type="checkbox" class="equipmentradio" name="cardio">Cardio<br>
+	      <input type="checkbox" class="equipmentradio" name="pool">Pool<br>
+	      <button type="button" onclick="clearSelection('equipmentradio')">Clear</button>
+	    </td>
+	    <td>
+	      <input type="radio" class="locradio" name="loc" value="5">&lt;5 miles from current location<br>
+	      <input type="radio" class="locradio" name="loc" value="10">&lt;10 miles from current location<br>
+	      <input type="radio" class="locradio" name="loc" value="25">&lt;25 miles from current location<br>
+	      <input type="radio" class="locradio" name="loc" value="50">&lt;50 miles from current location<br>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="current">&lt;<input class="currentamount" type="text" size="3" disabled> miles from current location<br>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="otheraddress">&lt;<input class="otheraddressamount" type="text" size="3" disabled> miles from <input class="otheraddressamount" type="text" name="userloc" placeholder="other location" disabled><br>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="twoloc">Or, enter your home and work addresses, and we'll find a gym in between!<br>
+	      <input type="text" class="twolocamount" placeholder="Address 1" name="ad1" disabled><br>
+	      <input type="text" class="twolocamount" placeholder="Address 2" name="ad2" disabled><br>
+	      <button type="button" onclick="clearSelection('locradio')">Clear</button><br>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td>
+	      <input class="btn btn-default btn-lg" type="submit">
+	    </td>
+	  </tr>
+	  </form>
+	</table>
 	<div id="gymInfo"></div>
       </div>
     </td>
+    <td style="width:50%">
+      <div id="map" style="width:300px; height:300px;"></div>
+    </td>
+  </tr>
+  <tr>
+    <table class="table table-hover">
+      {% if gyms|length > 0 and showAll == "False" %}
+      <thead>
+	<tr>
+	  <th>Name</th>
+	  <th>Price</th>
+	  <th>Hours<th>
+	  <th>Address</th>
+	</tr>
+      </thead>
+      {% for gym in gyms %}
+      <tr onclick="window.document.location='/gym/{{gym['id']}}'">
+	<td>{{gym['name']}}</td>
+	<td>{{gym['price']}}</td>
+	<td>{{gym['hours']}}</td>
+	<td>{{gym['address']}}</td>
+      </tr>
+      {% endfor %}
+      {% endif %}
+    </table>
   </tr>
 </table>
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+var gyms = {{gyms|tojson|safe}};
+{% if showAll == "True" %}
+var showAll = true;
+{% else %}
+var showAll = false;
+{% endif %}
+</script>
 <script src="/static/scripts/browsegyms.js"></script>
+</div>
+</div>
+</div>
 {% endblock bodycontent %}

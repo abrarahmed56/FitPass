@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block headcontent %}
+<title>Edit your Gym</title>
+{% endblock headcontent %}
+{% block bodycontent %}
+<hr class="intro-divider">
+<br>
+<h2>Amenities:</h2>
+<input type="hidden" id="gymId" value="{{gym_id}}">
+<form id="equipment">
+{% for machine in equipment %}
+{% if equipment[machine][0]==0 %}
+{% set disabled = "disabled" %}
+{% set checked = "" %}
+{% else %}
+{% set disabled = "" %}
+{% set checked = "checked" %}
+{% endif %}
+<input onchange="endisable('{{machine}}')" type="checkbox" {{checked}}>
+<input id="{{machine}}" type="text" value="{{equipment[machine][0]}}" size="2" maxamount="2" name="{{machine}}" {{disabled}}> {{equipment[machine][1]}}<br>
+{% endfor %}
+<button type="button" onclick="updateInfo('Equipment');">Update</button>
+</form>
+Price:<input id="Price" type="number" value={{price}}> per <input type="text" placeholder="month/year/class">
+<button onclick="updateInfo('Price')">Update</button><br>
+<!--<datalist id="time">
+  <option value="month">
+  <option value="year">
+</datalist>-->
+Requirements:<input id="Requirements" type="text" value={{requirements}}>
+<button onclick="updateInfo('Requirements')">Update</button><br>
+Misc/Extras:<input id="Misc" type="text" value={{misc}}><br>
+<button type="button" onclick="updateInfo('Misc')">Update</button>
+Images/Videos:
+<button>Upload</button>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="/static/scripts/edit_gym.js"></script>
+{% endblock bodycontent %}

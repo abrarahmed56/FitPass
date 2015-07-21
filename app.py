@@ -1,25 +1,21 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import urllib2
 import json
 import MySQLdb
+import math
 
 app = Flask(__name__)
 app.secret_key = "a"
 
 try:
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
     c = con.cursor()
+    c.execute("DROP TABLE IF EXISTS Gyms")
     c.execute("DROP TABLE IF EXISTS Users")
-    c.execute("CREATE TABLE Users(User VARCHAR(50), Password VARCHAR(50), Gym VARCHAR(50))")
-    c.execute("INSERT INTO Users VALUES('test1', 'test1', 'Blink Fitness')")
-    c.execute("INSERT INTO Users VALUES('test2', 'test2', 'Golds Gym')")
-    c.execute("INSERT INTO Users VALUES('test3', 'test3', 'NYC Recreation Center')")
-    #c.execute("DROP TABLE IF EXISTS Gyms")
-    #c.execute("CREATE TABLE Gyms(User VARCHAR(50), PlaceId VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION, Equipment VARCHAR(1000), Requirements VARCHAR(1000), Misc VARCHAR(1000))")
-    c.execute("DROP TABLE IF EXISTS Reports")
-    c.execute("CREATE TABLE Reports(User VARCHAR(50), PlaceId VARCHAR(50))")
-    c.execute("SELECT * FROM Users")
-    print c.fetchall()
+    c.execute("CREATE TABLE Users(User VARCHAR(50), Password VARCHAR(50), PRIMARY KEY (User))")
+    c.execute("CREATE TABLE Gyms(GymId VARCHAR(50), GymName VARCHAR(50), User VARCHAR(50), LatX DOUBLE PRECISION, LatY DOUBLE PRECISION, GymType VARCHAR(50), Squat TINYINT, Bench TINYINT, Cardio TINYINT, Pool TINYINT, Price VARCHAR(20), Requirements VARCHAR(1000), Misc VARCHAR(1000), PRIMARY KEY (GymId), FOREIGN KEY (User) REFERENCES Users(User) ON DELETE CASCADE)")
+    print c.execute("INSERT INTO Users VALUES('a@a.com', 'asdfa')")
+    print c.execute("INSERT INTO Gyms VALUES('541cb2a8498e9895756f50f5', 'Blink Fitness', 'a@a.com', 40.747241, -73.887637, 'rec', 0, 3, 6, 1, '50:month', 'age:18+', 'free pizza every Monday')")
     con.commit()
 except MySQLdb.Error, e:
     print "Error %d: %s" % (e.args[0], e.args[1])
@@ -31,106 +27,201 @@ finally:
 def index():
     return render_template("index.html")
 
-@app.route('/browsegyms')
+@app.route('/browsegyms', methods=["GET", "POST"])
 def browsegyms():
-    return render_template("browsegyms.html")
+    gyms = []
+    if request.method=="POST":
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+        with con:
+            c = con.cursor()
+            c.execute("SELECT * FROM Gyms")
+            gymsql = c.fetchall()
+            for gymRow in gymsql:
+                match = 0
+                if "squat" in request.form:
+                    if gymRow[6] < 1:
+                        match = match + 15
+                if "bench" in request.form:
+                    if gymRow[7] < 1:
+                        match = match + 15
+                if "cardio" in request.form:
+                    if gymRow[8] < 1:
+                        match = match + 15
+                if "pool" in request.form:
+                    if gymRow[9] < 1:
+                        match = match + 15
+                if "price" in request.form:
+                    gymPrice = gymRow[10]
+                    requestedPrice = request.form['price']
+                    if "per" in requestedPrice:
+                        if requestedPrice == gymPrice[gymPrice.find(":"):]:
+                            priceDifference = int(gymPrice[:gymPrice.find(":")]) - int(request.form[requestedPrice+'amount'])
+                            if priceDifference > 0:
+                                match = match + math.floor(priceDifference * .5)
+                    else:
+                        if requestedPrice.split(":")[1] == gymPrice[gymPrice.find(":")+1:]:
+                            priceDifference = int(gymPrice[:gymPrice.find(":")]) - int(requestedPrice.split(":")[0])
+                            if priceDifference > 0:
+                                match = match + math.floor(priceDifference * .5)
+                if match < 10:
+                    gym = {
+                        "id": gymRow[0],
+                        "name": gymRow[1],
+                        "lat": gymRow[3],
+                        "lng": gymRow[4],
+                        "price": gymRow[10].replace(":", " per "),
+                        "hours": "N/A",
+                        "address": "N/A",
+                        "match": match
+                        }
+                    gyms.append(gym)
+            showAll = "False"
+    else:
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+        with con:
+            c = con.cursor()
+            c.execute("SELECT * FROM Gyms")
+            results = c.fetchall()
+            for result in results:
+                gym = {
+                    "id": result[0],
+                    "name": result[1],
+                    "lat": result[3],
+                    "lng": result[4]
+                    }
+                gyms.append(gym)
+            showAll = "True"
+    return render_template("browsegyms.html", gyms=gyms, showAll=showAll)
 
-@app.route('/settings')
 def settings():
     return render_template("settings.html")
 
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
+@app.route('/contact')
+def contact():
+    return render_template("contact.html")
+
+#TODO wrapper to redirect to edit_gym if logged in
 @app.route('/gymadminlogin', methods=['GET', 'POST'])
 def admin_login():
     if request.method == "POST":
-        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
-            user = request.form['user']
+            user = request.form['email']
             #TODO hash password
             password = request.form['password']
             c.execute("SELECT * FROM Users WHERE User=%s AND Password=%s LIMIT 1", (user, password))
             s = c.fetchone()
             if s == None:
-                #TODO use flash
                 flash("Credentials incorrect")
                 return redirect(url_for("admin_login"))
             session['user'] = user
-            return render_template("admin_loggedin.html", admin=user)
+            return redirect(url_for("edit_gym"))
     return render_template("admin_login.html")
 
-@app.route('/editgyms')
-def edit_gyms():
+@app.route('/signup', methods=['POST'])
+def signup():
+    if request.method=="POST":
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+        with con:
+            c = con.cursor()
+            user = request.form['email']
+            session['user'] = user
+            #TODO hash password
+            c.execute("SELECT * FROM Users WHERE User=%s LIMIT 1", (user,))
+            s = c.fetchone()
+            if s == None:
+                password = request.form['password']
+                c.execute("INSERT INTO Users VALUES(%s, %s)", (user, password))
+                flash("Registration successful!")
+                return redirect(url_for("select_gym"))
+            flash("Username taken")
+            return redirect(url_for("admin_login"))
+    return "Error"
+
+@app.route('/selectgym', methods=['GET'])
+def select_gym():
     if 'user' in session:
-        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        user = session['user']
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+        with con:
+            c = con.cursor()
+            c.execute("SELECT GymId FROM Gyms")
+            taken_gyms = []
+            results = c.fetchall()
+            for result in results:
+                taken_gyms.append(result[0])
+            return render_template("select_gym.html", user=user, takenGyms=taken_gyms)
+        return "Error"
+    return "Error"
+
+@app.route('/editgym', methods=["GET", "POST"])
+def edit_gym():
+    if 'user' in session:
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
             user = session['user']
-            c.execute("SELECT GYM FROM Users WHERE User=%s LIMIT 1", (user,))
-            s = c.fetchone()
-            print "s: " + s[0]
-        return render_template("edit_gyms.html", gymName=s[0])
+            c.execute("SELECT * FROM Gyms WHERE User=%s LIMIT 1", (user,))
+            gym = c.fetchone()
+            gym_id = gym[0]
+            squat = gym[6]
+            bench = gym[7]
+            cardio = gym[8]
+            pool = gym[9]
+            requirements = gym[11]
+            misc = gym[12]
+            return render_template("edit_gym.html", gym_id=gym_id, equipment={'squat':(squat, "Squat Rack(s)"), 'bench':(bench, "Bench(es)"), 'cardio':(cardio, "Cardio Machine(s)"), 'pool':(pool, "Pool(s)")}, squat=squat, bench=bench, cardio=cardio, pool=pool, requirements=requirements, misc=misc)
     else:
         flash("You have to log in before accessing this page")
         return redirect(url_for('admin_login'))
+
+@app.route('/gym/<id>')
+def gympage(id):
+    con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+    with con:
+        c = con.cursor()
+        c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (id,))
+        gym = c.fetchone()
+        name = gym[1]
+        price = gym[10].replace(":", " per ")
+        requirements = gym[11]
+        misc = gym[12]
+        equipment = {"squat": (gym[6], "Squat Rack(s)"),
+                "bench": (gym[7], "Bench(es)"),
+                "cardio": (gym[8], "Cardio Machine(s)"),
+                "pool": (gym[9], "Pool(s)")
+                }
+    return render_template("gym_page.html", name=name, price=price, requirements=requirements, misc=misc, equipment=equipment)
 
 @app.route('/logout')
 def logout():
     session.pop('user')
     return redirect(url_for('index'))
 
-@app.route('/api/getDetails', methods=['POST'])
-def get_details():
-    url = urllib2.urlopen(request.form['url'])
-    d = json.loads(url.read())
-    d = d['result']
-    data = {}
-    if 'website' in d:
-        data['website'] = d['website']
-    else:
-        data['website'] = "Not available"
-    if 'formatted_phone_number' in d:
-        data['phone'] = d['formatted_phone_number']
-    else:
-        data['phone'] = "Not available"
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
-    with con:
-        c = con.cursor()
-        id = request.form['id']
-        c.execute("SELECT * FROM Gyms WHERE PlaceId=%s LIMIT 1", (id,))
-        s = c.fetchone()
-        if 'user' in session:
-            user = session['user']
-            if s == None:
-                data['button'] = "<button id='markerbutton' onclick='addGym()'>Add to your Gyms</button>"
-            elif s[0] != user:
-                data['button'] = "This gym is registered with someone else. If you believe this is an error, please click <button onclick='report(&quot;" + user + "&quot;)'>here</button>"
-            else:
-                data['button'] = "<button id='markerbutton' onclick='removeGym()'>Remove from your Gyms</button>"
-        if s != None:
-            data['equipment'] = s[4]
-            data['requirements'] = s[5]
-            data['misc'] = s[6]
-        else:
-            data['equipment'] = "Not available yet"
-            data['requirements'] = "Not available yet"
-            data['misc'] = "Not available yet"
-    print data
-    return json.dumps(data)
-
-@app.route('/api/addgym', methods=['POST'])
+@app.route('/addgym', methods=['POST'])
 def add_gym():
     if request.method=='POST':
-        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
             user = session['user']
-            id = request.form['id']
-            c.execute("SELECT * FROM Gyms WHERE User=%s AND PlaceId=%s LIMIT 1", (user, id))
+            if 'gymId' not in request.form or 'gymName' not in request.form:
+                flash("Please select a gym")
+                return redirect(url_for("select_gym"))
+            gymId = request.form['gymId']
+            gymName = request.form['gymName']
+            gymLat = request.form['gymLat']
+            gymLng = request.form['gymLng']
+            c.execute("SELECT * FROM Gyms WHERE User=%s AND GymId=%s LIMIT 1", (user, gymId))
             if c.fetchone()==None:
-                x = request.form['x']
-                y = request.form['y']
-                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s, '', '', '')", (user, id, x, y) )
-                return "Gym added!"
+                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, 'N/A', 0, 0, 0, 0, '', '', '')", (gymId, gymName, user, gymLat, gymLng) )
+                flash("Gym added!")
+                return redirect(url_for("edit_gym"))
             return "Gym Already in your Gyms"
         return "Database Error"
     return "Malformed request"
@@ -138,60 +229,39 @@ def add_gym():
 @app.route('/api/removegym', methods=['POST'])
 def remove_gym():
     if request.method=='POST':
-        con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
             user = session['user']
             place_id = request.form['placeId']
-            c.execute("DELETE FROM Gyms WHERE User=%s AND PlaceId=%s", (user, place_id) )
+            c.execute("DELETE FROM Gyms WHERE User=%s AND GymId=%s", (user, place_id) )
             return "Gym deleted!"
         return "Database Error"
     return "Malformed request"
 
-@app.route('/api/getgyms', methods=['POST'])
-def get_gyms():
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
-    with con:
-        c = con.cursor()
-        user = session['user']
-        data = []
-        c.execute("SELECT PlaceId FROM Gyms WHERE User=%s", (user,))
-        results = c.fetchall()
-        for result in results:
-            data.append(result[0]);
-        return json.dumps(data)
-    return "Error"
-
-@app.route('/api/getallgyms', methods=['POST'])
-def get_all_gyms():
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
-    with con:
-        c = con.cursor()
-        data = []
-        c.execute("SELECT PlaceId FROM Gyms")
-        results = c.fetchall()
-        for result in results:
-            data.append(result[0]);
-        return json.dumps(data)
-    return "Error"
 
 @app.route('/api/updateinfo', methods=['POST'])
 def update_info():
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
     with con:
         c = con.cursor()
         user = session['user']
         infotype = request.form['type']
-        info = request.form['text']
-        place_id = request.form['placeId']
+        gym_id = request.form['gymId']
         if infotype != "Equipment" and infotype != "Requirements" and infotype != "Misc":
             return "bruh stop screwing with the system"
-        c.execute("UPDATE Gyms SET " + infotype + "=%s WHERE User=%s AND PlaceId=%s", (info, user, place_id))
+        if infotype == "Equipment":
+            info = json.loads(request.form['text'])
+            for lift in info:
+                c.execute("UPDATE Gyms SET " + lift + "=%s WHERE User=%s AND GymId=%s", (info[lift], user, gym_id))
+            return "Update successful!"
+        info = request.form['text']
+        c.execute("UPDATE Gyms SET " + infotype + "=%s WHERE User=%s AND GymId=%s", (info, user, gym_id))
         return "Update successful!"
 
 @app.route('/api/report', methods=['POST'])
 def report():
-    con = MySQLdb.connect('127.0.0.1', 'testuser', 'test623', 'testdb')
+    con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
     with con:
         c = con.cursor()
         user = session['user']
