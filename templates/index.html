@@ -1,29 +1,68 @@
 {% extends "base.html" %}
 {% block headcontent %}
 <title>Pingyms</title>
+    <!-- Bootstrap Core CSS -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">-->
+    <link href="static/styles/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="static/styles/css/landing-page.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/styles/css/mymaterialize.css">
+
+    <!-- Custom Fonts -->
+    <link href="static/styles/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- Compiled and minified CSS 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.0/css/materialize.min.css">-->
+    <!-- Compiled and minified JavaScript -->
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+      body {
+      padding-top: 50px;
+      overflow-y: hidden;
+      }
+    </style>
 {% endblock headcontent %}
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav navbar-right">
-    <li>
-      <a href="/gymadminlogin">Login for Gym Owners</a>
-    </li>
-    <li>
-      <a href="/about">About</a>
-    </li>
-    <li>
-      <a href="/contact">Contact</a>
-    </li>
+    {% if adminLoggedIn %}
+    {% include "nav_links/admin_select_gym_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% endif %}
   </ul>
 </div>
 {% endblock navcontent %}
-
 {% block bodycontent %}
-<a name="about"></a>
 <div class="intro-header">
   <div class="container">
     <div class="row">
       <div class="col-lg-12">
+	<!--<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="4" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:658px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:8px;"> <div style=" background:#F8F8F8; line-height:0; margin-top:40px; padding:50% 0; text-align:center; width:100%;"> <div style=" background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAMAAAApWqozAAAAGFBMVEUiIiI9PT0eHh4gIB4hIBkcHBwcHBwcHBydr+JQAAAACHRSTlMABA4YHyQsM5jtaMwAAADfSURBVDjL7ZVBEgMhCAQBAf//42xcNbpAqakcM0ftUmFAAIBE81IqBJdS3lS6zs3bIpB9WED3YYXFPmHRfT8sgyrCP1x8uEUxLMzNWElFOYCV6mHWWwMzdPEKHlhLw7NWJqkHc4uIZphavDzA2JPzUDsBZziNae2S6owH8xPmX8G7zzgKEOPUoYHvGz1TBCxMkd3kwNVbU0gKHkx+iZILf77IofhrY1nYFnB/lQPb79drWOyJVa/DAvg9B/rLB4cC+Nqgdz/TvBbBnr6GBReqn/nRmDgaQEej7WhonozjF+Y2I/fZou/qAAAAAElFTkSuQmCC); display:block; height:44px; margin:0 auto -44px; position:relative; top:-22px; width:44px;"></div></div> <p style=" margin:8px 0 0 0; padding:0 4px;"> <a href="https://instagram.com/p/6SNX7DHqPG/" style=" color:#000; font-family:Arial,sans-serif; font-size:14px; font-style:normal; font-weight:normal; line-height:17px; text-decoration:none; word-wrap:break-word;" target="_top">Weightlifting competition upstate</a></p> <p style=" color:#c9c8cd; font-family:Arial,sans-serif; font-size:14px; line-height:17px; margin-bottom:0; margin-top:8px; overflow:hidden; padding:8px 0 7px; text-align:center; text-overflow:ellipsis; white-space:nowrap;">A photo posted by Abrar Ahmed (@abrarlikesred) on <time style=" font-family:Arial,sans-serif; font-size:14px; line-height:17px;" datetime="2015-08-12T13:11:04+00:00">Aug 12, 2015 at 6:11am PDT</time></p></div></blockquote>
+	<script async defer src="//platform.instagram.com/en_US/embeds.js"></script>-->
 	<div class="intro-message">
 	  <h1>Pingyms</h1>
 	  <h3>Pinpoint Your Gym</h3>
@@ -52,61 +91,4 @@
     </div>
   </div>
 </div>
-<!--
-<a name="services"></a>
-<div class="content-section-a">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-5 col-sm-6">
-	<hr class="section-heading-spacer">
-	<div class="clearfix"></div>
-	<h2 class="section-heading">Finally, an easy way to see what's in your gyms:</h2>
-	<p class="lead">Easily view amenities for gyms in your area</p>
-      </div>
-      <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-	<img class="img-responsive" src="" alt="">
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="content-section-b">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
-        <hr class="section-heading-spacer">
-        <div class="clearfix"></div>
-        <h2 class="section-heading">Let Your Costumers Know About<br>All the Cool Stuff You Have</h2>
-        <p class="lead">Contact us if you want to add your gym to our site, then click <a target="_blank" href="/gymadminlogin">here</a> to use the site!</p>
-      </div>
-      <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-        <img class="img-responsive" src="" alt="">
-      </div>
-    </div>
-    
-  </div>
-</div>
-
-<a  name="contact"></a>
-<div class="banner">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-6">
-        <h2>Connect with Pingyms:</h2>
-      </div>
-      <div class="col-lg-6">
-        <ul class="list-inline banner-social-buttons">
-          <li>
-            <a href="https://twitter.com/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-twitter fa-fw"></i> <span class="network-name">Twitter</span></a>
-          </li>
-          <li>
-            <a href="https://github.com/abrarahmed56/Pingyms" class="btn btn-default btn-lg"><i class="fa fa-github fa-fw"></i> <span class="network-name">Github</span></a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
--->
-<br>
 {% endblock bodycontent %}

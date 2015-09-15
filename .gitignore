@@ -1,5 +1,18 @@
 # Misc
 *~
+hidefromgithub.py
+static/styles/css
+static/styles/font-awesome
+static/styles/fonts
+static/styles/js
+static/styles/img
+static/styles/index.html
+static/styles/LICENSE
+static/styles/README.md
+todolist
+resetDB.py
+resetDBnew.py
+displayInfo.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

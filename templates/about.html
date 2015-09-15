@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block headcontent %}
+{{ super() }}
+<title>About Pingyms</title>
+{% endblock headcontent %}
+
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% if adminLoggedIn %}
+    {% include "nav_links/admin_select_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% endif %}
+  </ul>
+</div>
+{% endblock navcontent %}
+
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <h1>About Pingyms</h1>
+    Pingyms was created by co-founders Gamal Hassan and Abrar Ahmed in order to provide people the much needed service of finding their ideal gym. Users can select from a multitude of criteria not available online unless one is willing to sift through reviews for hours. Users as well as gym owners are able to upload information to the site for the benefit of everybody visiting.
+  </div>
+</div>
+{% endblock bodycontent %}

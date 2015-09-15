@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block headcontent %}
+{{ super() }}
+<title>Login/Signup</title>
+{% endblock headcontent %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+  </ul>
+</div>
+{% endblock navcontent %}
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="clearfix"></div>
+      <h2>Gym Manager</h2>
+      <h4>Login:</h4>
+      <form method="POST" action="/gymmanagerlogin" onsubmit="return validate('login', 'ManagerLogin')">
+	<div class="form-group">
+	  <input type="text" class="form-control" id="emailManagerLogin" name="email" placeholder="Email">
+	</div>
+	<div class="form-group">
+	  <input class="form-control" id="passwordManagerLogin" name="password" type="password" placeholder="Password">
+	</div>
+	<button type="submit" class="btn btn-default">Login as Gym Manager</button>
+      </form>
+      <hr>
+      <h4>Sign up</h4>
+      <form action="/gymmanagersignup" method="POST" onsubmit="return matchFields('email', 'ManagerSignup') && matchFields('password', 'ManagerSignup') && validate('signup', 'ManagerSignup')">
+	<div class="form-group">
+	  <input class="form-control" id="emailManagerSignup1" name="email" type="text" placeholder="Email">
+	</div>
+	<div class="form-group">
+	  <input class="form-control" id="emailManagerSignup2" type="text" placeholder="Confirm Email">
+	</div>
+	<div class="form-group">
+	  <input class="form-control" id="passwordManagerSignup1" name="password" type="password" placeholder="Password">
+	</div>
+	<div class="form-group">
+	  <input class="form-control" id="passwordManagerSignup2" type="password" placeholder="Confirm Password">
+	</div>
+	<button type="submit" class="btn btn-default">Sign up as Gym Manager</button>
+      </form>
+    </div>
+  <div class="col-lg-6">
+    <div class="clearfix"></div>
+    <h2>Gym Goer</h2>
+    <h4>Login:</h4>
+    <form method="POST" action="/consumerlogin" onsubmit="return validate('login', 'GoerLogin')">
+      <div class="form-group">
+	<input type="text" class="form-control" id="emailGoerLogin" name="email" placeholder="Email">
+      </div>
+      <div class="form-group">
+	<input class="form-control" id="passwordGoerLogin" name="password" type="password" placeholder="Password">
+      </div>
+      <button type="submit" class="btn btn-default">Login as Gym Goer</button>
+    </form>
+    <hr>
+    <h4>Sign up</h4>
+    <form action="/consumersignup" method="POST" onsubmit="return matchFields('email', 'GoerSignup') && matchFields('password', 'GoerSignup') && validate('signup', 'GoerLogin')">
+      <div class="form-group">
+	<input class="form-control" id="emailGoerSignup1" name="email" type="text" placeholder="Email">
+      </div>
+      <div class="form-group">
+	<input class="form-control" id="emailGoerSignup2" type="text" placeholder="Confirm Email">
+      </div>
+      <div class="form-group">
+	<input class="form-control" id="passwordGoerSignup1" name="password" type="password" placeholder="Password">
+      </div>
+      <div class="form-group">
+	<input class="form-control" id="passwordGoerSignup2" type="password" placeholder="Confirm Password">
+      </div>
+      <button type="submit" class="btn btn-default">Sign up as Gym Goer</button>
+    </form>
+  </div>
+</div>
+<script src="/static/scripts/login.js"></script>
+{% endblock bodycontent %}

@@ -1,38 +1,127 @@
 {% extends "base.html" %}
+
 {% block headcontent %}
-<title>Edit your Gym</title>
-{% endblock headcontent %}
-{% block bodycontent %}
-<hr class="intro-divider">
-<br>
-<h2>Amenities:</h2>
-<input type="hidden" id="gymId" value="{{gym_id}}">
-<form id="equipment">
-{% for machine in equipment %}
-{% if equipment[machine][0]==0 %}
-{% set disabled = "disabled" %}
-{% set checked = "" %}
+{% if managerLoggedIn %}
+{{ super() }}
 {% else %}
-{% set disabled = "" %}
-{% set checked = "checked" %}
+{{ super()|replace("static/", "../static/") }}
 {% endif %}
-<input onchange="endisable('{{machine}}')" type="checkbox" {{checked}}>
-<input id="{{machine}}" type="text" value="{{equipment[machine][0]}}" size="2" maxamount="2" name="{{machine}}" {{disabled}}> {{equipment[machine][1]}}<br>
-{% endfor %}
-<button type="button" onclick="updateInfo('Equipment');">Update</button>
+<title>Edit your Gym</title>
+<script>
+{% if sendGym %}
+sendGym = true;
+{% else %}
+sendGym = false;
+{% endif %}
+</script>
+{% endblock headcontent %}
+
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+  </ul>
+</div>
+{% endblock navcontent %}
+
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+<h2>Amenities:</h2>
+<input type="hidden" id="gymId" value="{{gymId}}">
+<form id="equipment">
+{{equipment|safe}}
+<button class="btn" type="button" onclick="updateInfo('Equipment', sendGym);">Update</button>
 </form>
-Price:<input id="Price" type="number" value={{price}}> per <input type="text" placeholder="month/year/class">
-<button onclick="updateInfo('Price')">Update</button><br>
-<!--<datalist id="time">
-  <option value="month">
-  <option value="year">
-</datalist>-->
-Requirements:<input id="Requirements" type="text" value={{requirements}}>
-<button onclick="updateInfo('Requirements')">Update</button><br>
-Misc/Extras:<input id="Misc" type="text" value={{misc}}><br>
-<button type="button" onclick="updateInfo('Misc')">Update</button>
-Images/Videos:
-<button>Upload</button>
+<br>
+<form class="form-inline">
+  <div class="form-group">
+    Price: <div class="input-group">
+      <div class="input-group-addon">$</div><input class="form-control" id="Price" type="number" value={{priceNum}}>
+    </div>
+    per 
+    <select class="form-control {{priceUnit}}">
+      <option>month</option>
+      <option>year</option>
+      <option>class</option>
+    </select>
+    <script>
+      $(".{{priceUnit}}").val("{{priceUnit}}")
+    </script>
+  </div>
+  <button type="button" class="btn" onclick="updateInfo('Price', sendGym)">Update</button><br>
+</form>
+<br>
+Hours:
+<form id="hours">
+<div class="form-group">
+  <div id="time">
+    {% for key in hours %}
+    {% for time in hours[key] %}
+    {% if key=="Weekends" or key=="Weekdays" or key=="Everyday" %}
+    <div onclick="expand('{{key}}', this);" class="form-control btn" class="form-control btn" role="button">Expand days</div>
+    <div class="input-group time" id="expand{{key}}">
+    {% else %}
+    <div class="input-group time">
+    {% endif %}
+      <div class="input-group-addon">From </div>
+      <input type="time" name="from0" class="form-control hours-info-from" value={{time[0]}}>
+      <div class="input-group-addon"> to </div>
+      <input type="time" name="to0" class="form-control hours-info-to" value={{time[1]}}>
+      <div class="input-group-addon">on</div>
+      <select class="form-control {{key}} hours-info-day" name="day0">
+	<option>Everyday</option>
+	<option>Weekdays</option>
+	<option>Weekends</option>
+	<option>Monday</option>
+	<option>Tuesday</option>
+	<option>Wednesday</option>
+	<option>Thursday</option>
+	<option>Friday</option>
+	<option>Saturday</option>
+	<option>Sunday</option>
+      </select>
+      <div onclick="removeTime(this.parentElement.id)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+    </div>
+    <script>
+      $(".{{key}}").val("{{key}}");
+    </script>
+    {% endfor %}
+    {% endfor %}
+  </div>
+  <button onclick="addTime()" type="button" class="btn btn-default">+Add another time range</button>
+</div>
+</form>
+<button type="button" class="btn" onclick="updateInfo('Hours', sendGym)">Update</button><br>
+<!--TODO FIGURE OUT WHAT TO DO ABOUT QUOTES-->
+Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
+<button class="btn" onclick="updateInfo('Requirements', sendGym)">Update</button><br>
+<br>
+Misc/Extras:<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>
+<button class="btn" type="button" onclick="updateInfo('Misc', sendGym)">Update</button><br>
+<br>
+<form action="/uploadImages" method="POST" enctype="multipart/form-data">
+  Images/Videos:<br>
+  {% for gymImg in gymImgs %}
+  <div id="{{gymImg|replace('.', '')}}">
+    <img src="../static/{{gymId}}/{{gymImg}}"><br>
+    <button type="button" class="btn btn-default">Resize</button>
+    <button type="button" class="btn btn-default" onclick="removeImage('{{gymImg}}');">Remove</button>
+    <br>
+    <br>
+  </div>
+  {% endfor %}
+  <div id="inputImgs">
+    <input type="file" class="inputImg" name="pic1" accept="image/*">
+  </div>
+  <input type="hidden" name="gymId" value="{{gymId}}">
+  <button type="button" onclick="addImage()" class="btn btn-sm">Add another file</button>
+  <br>
+  <button class="btn">Upload</button>
+</form>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="/static/scripts/edit_gym.js"></script>
 {% endblock bodycontent %}

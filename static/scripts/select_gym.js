@@ -12,8 +12,10 @@ if (!navigator.geolocation) {
 // Once we've got a position, zoom and center the map
 // on it, and add a single marker.
 map.on('locationfound', function(e) {
-	map.fitBounds([[e.bounds._southWest.lat-.03, e.bounds._southWest.lng-.03], [e.bounds._northEast.lat+.03, e.bounds._northEast.lng+.03]]);
-	myLocation = e.latlng.lat + "," + e.latlng.lng;
+	//map.fitBounds([[e.bounds._southWest.lat-.03, e.bounds._southWest.lng-.03], [e.bounds._northEast.lat+.03, e.bounds._northEast.lng+.03]]);
+	//myLocation = e.latlng.lat + "," + e.latlng.lng;
+	map.fitBounds([[40.712895, -73.852834], [40.772895, -73.912834]])
+	myLocation = "40.742895,-73.882834";
 	console.log('found');
 	myLayer.setGeoJSON({
 		type: 'Feature',
@@ -89,7 +91,8 @@ var searchGyms = function() {
 			  inputValues = '<input type="hidden" name="gymId" value="' + venue.id + '">' +
 			      '<input type="hidden" name="gymName" value="' + venue.name + '">' +
 			      '<input type="hidden" name="gymLat" value="' + venue.location.lat + '">' +
-			      '<input type="hidden" name="gymLng" value="' + venue.location.lng + '">';
+			      '<input type="hidden" name="gymLng" value="' + venue.location.lng + '">' +
+			      '<input type="hidden" name="gymAddress" value="' + venue.location.address + '">';
 		      }
 		      var marker = L.marker(latlng, {
 			      icon: L.mapbox.marker.icon({

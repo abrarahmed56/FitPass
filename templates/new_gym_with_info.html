@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block headcontent %}
+{{super()|replace("static/", "../static/")}}
+{% endblock headcontent %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% if managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% endif %}
+  </ul>
+</div>
+{% endblock navcontent %}
+{% block bodycontent %}
+<br>
+There is no information available yet for this gym, but our users have put up some</br>
+<a href="/editgym/{{id}}">Click here if you wish to contribute</a><br>
+{{formattedInfo|safe}}
+{% endblock bodycontent %}

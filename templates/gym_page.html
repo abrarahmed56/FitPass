@@ -1,58 +1,64 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <!-- Bootstrap Core CSS -->
-    <link href="../static/styles/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link href="../static/styles/css/landing-page.css" rel="stylesheet">
-
-    <!-- Custom Fonts -->
-    <link href="../static/styles/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
-    <style>
-      body {
-      padding-top: 50px;
-      }
-    </style>
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
-      <div class="container topnav">
-	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-	  <span class="sr-only">Toggle navigation</span>
-	  <span class="icon-bar"></span>
-	  <span class="icon-bar"></span>
-	  <span class="icon-bar"></span>
-	</button>
-	<a class="navbar-brand topnav" href="/">Pingyms</a>
-	{% block navcontent %}
-	{% endblock navcontent %}
-      </div>
-    </nav>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul class=flashes>
-      {% for message in messages %}
-      <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
+{% extends "base.html" %}
+{% block headcontent %}
+{{ super()|replace("static/", "../static/") }}
+<title>{{name}}</title>
+<script src="../static/scripts/gym_page.js"></script>
+{% endblock headcontent %}
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% if adminLoggedIn %}
+    {% include "nav_links/admin_select_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
     {% endif %}
-    {% endwith %}
+  </ul>
+</div>
+{% endblock navcontent %}
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <div class="col-xs-9">
     <h1>{{name}}</h1>
+    Last updated {{gym[lastUpdateCol]}}<br>
+    {% if goerLoggedIn or adminLoggedIn %}
+    <a href="/editgym/{{gymId}}">Please click here if this information is incorrect</a>
+    {% endif %}
+    {% if userUpdates %}
+    <br><a onclick="$('#userGymUpdatesContainer').toggle();">Click here to see descrepencies users found with the data</a>
+    {{userUpdates|safe}}
+    {% endif %}
+    {% for image in gymImgs %}
+    <img src="../static/{{gymId}}/{{image}}">
+    {% endfor %}
+    <br>
     Price: {{price}}<br>
     Requirements: {{requirements}}<br>
     Miscellaneous: {{misc}}<br>
-    {% for machine in equipment %}
-    {{equipment[machine][1]}}: {{equipment[machine][0]}}<br>
+    <u>Hours:</u> {{hours|safe}}<br>
+    <u>Equipment:</u><br>
+    {% for i in range(equipmentNames|length) %}
+    {{gym[i+equipmentStartCol]}} {{equipmentNames[i]}}<br>
     {% endfor %}
-    <script>
-    </script>
-  </body>
-</html>
+    </div>
+  </div>
+</div>
+{% endblock bodycontent %}

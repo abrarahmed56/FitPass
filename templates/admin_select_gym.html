@@ -9,8 +9,8 @@
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav navbar-right">
+    {% include "nav_links/browsegyms_link.html" %}
     {% include "nav_links/about_link.html" %}
-    {% include "nav_links/contact_link.html" %}
     {% include "nav_links/logout_link.html" %}
   </ul>
 </div>
@@ -22,7 +22,7 @@
     <div class="col-lg-12">
       <hr class="section-heading-spacer">
       <div class="clearfix"></div>
-      Please select your gym and enter its information<br>
+      Please select a gym to enter/edit its information<br>
       <form onsubmit="searchGyms(); return false;">
       Search for your gym: <input id="search" type="text"><button class="btn">Search</button>
       </form>
@@ -39,7 +39,7 @@
 	    <div class="input-group-addon">$</div><input class="form-control" id="Price" name="price" type="number" value={{price}}>
 	  </div>
 	  per 
-	  <select name="priceunit" class="form-control">
+	  <select id="PriceUnit" name="priceunit" class="form-control">
 	    <option>month</option>
 	    <option>year</option>
 	    <option>class</option>
@@ -127,5 +127,5 @@ Images/Videos:<br>
 <script type="text/javascript">
 var takenGyms = {{takenGyms|tojson|safe}};
 </script>
-<script src="/static/scripts/select_gym.js"></script>
+<script src="/static/scripts/admin_select_gym.js"></script>
 {% endblock bodycontent %}

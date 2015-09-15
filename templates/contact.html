@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block headcontent %}
+{{ super() }}
+<title>Contact Pingyms</title>
+{% endblock headcontent %}
+
+{% block navcontent %}
+<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+  <ul class="nav navbar-nav navbar-right">
+    {% if adminLoggedIn %}
+    {% include "nav_links/admin_select_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/browsegyms_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% endif %}
+  </ul>
+</div>
+{% endblock navcontent %}
+
+{% block bodycontent %}
+<div class="container">
+  <div class="row">
+    <h1>Contact Pingyms</h1>
+    info@pingyms.com
+    <br>
+    <u>Gamal Hassan:</u>
+    <br>
+    <u>Abrar Ahmed:</u>
+    <br>
+    347-216-8962
+    <br>
+    abrarahmed257@gmail.com
+  </div>
+</div>
+{% endblock bodycontent %}

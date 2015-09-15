@@ -1,30 +1,76 @@
 {% extends "base.html" %}
 {% block headcontent %}
+{{ super()|replace("50px", "70px") }}
 <title>Browse Gyms</title>
 <script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
 <link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+<link type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jScrollPane/2.0.22/style/jquery.jscrollpane.css" rel="stylesheet" media="all" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jScrollPane/2.0.22/script/jquery.jscrollpane.min.js"></script>
+<script>
+var gyms = {{gyms|tojson|safe}};
+$(function()
+{
+	$('.scroll-pane').jScrollPane();
+});
+var CLIENT_ID = 'L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR';
+var CLIENT_SECRET = 'YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA';
+var MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoicGluZ3ltcyIsImEiOiJhYjI3YjAwZDU1YmRhMmZlYjljOGYxODNmMjIyYzU2MSJ9.Ssr2xrhyhlIpnSr5rQRFvQ'
+{% if showAll %}
+  var showAll = true;
+</script>
 <style>
-  .scroll-pane
-  {
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  }
+html,
+body,
+.container,
+.row-1,
+div[class^="col-"]
+{
+	height: 95%;
+}
+{% else %}
+  var showAll = false;
+  $("#searchTable").hide()
+</script>
+<style>
+{% endif %}
+#container
+{
+	height: 100%;
+}
+pre
+{
+	width: 95%;
+}
+.scroll-pane
+{
+	overflow: auto;
+        height: 100%;
+        width: 100%;
+}
 </style>
 {% endblock headcontent %}
-
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav navbar-right">
-    <li>
-      <a href="#about">About</a>
-    </li>
-    <li>
-      <a href="#services">Services</a>
-    </li>
-    <li>
-      <a href="#contact">Contact</a>
-    </li>
+    {% if adminLoggedIn %}
+    {% include "nav_links/admin_select_gym_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif managerLoggedIn %}
+    {% include "nav_links/edit_gym_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% elif goerLoggedIn or adminLoggedIn %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% include "nav_links/logout_link.html" %}
+    {% else %}
+    {% include "nav_links/login_link.html" %}
+    {% include "nav_links/about_link.html" %}
+    {% include "nav_links/contact_link.html" %}
+    {% endif %}
   </ul>
 </div>
 {% endblock navcontent %}
@@ -45,114 +91,463 @@ featured gyms are on homepage
 research for equipment
 background is http://burpeezoid.com/wp-content/uploads/2015/01/dmitri-2.jpg
 -->
+<!--
+EQUIPMENT
 
+Yoga:
+mat
+strap
+bolster
+blocks
+
+Sparring:
+medicine ball
+jump rope
+resistance band
+weighted vest
+conditioning rope
+boxing gloves
+punching mitt
+hand wraps
+heavy bag(punching)
+
+Fitness Center:
+dumbells
+barbell
+yoga mats
+bench
+squat rack
+tredmill
+tv
+wifi
+elliptical
+olympic platform
+stretching area
+stationary bikes
+stairmaster climber
+locker rooms
+personal trainer
+physical therapy
+foam rollers
+resistance bands
+shower
+sauna
+towels
+basketball courts
+parking
+pool
+power rack
+
+Crossfit:
+bars
+bumper plates
+rings
+medicine balls
+abmat
+jumpropes
+kettle bells
+squat stands
+rings
+rowers
+
+Rock Climbing:
+harness
+climbing shoes
+climbing helmet
+carabeners
+climbing rope
+chalk
+crashpads
+belay device
+quickdraws
+
+Dance:
+type of dance
+age group
+level
+dance hour
+glassless mirror
+-->
+<!--
+IMPROVED EQUIPMENT SORTING
+Weights:
+Squat, bench, platform, kettlebell, dumbells
+cardio:
+jump rope
+conditioning rope
+treadmill, elliptical
+hygene(?):
+sauna
+shower
+locker rooms
+sports:
+swimming- pool, shower, towels
+basketball- court, #balls
+rock-climbing- rock walls, chalk
+all:
+abmat
+barbells
+basketball court
+belay device
+bench press
+bumper plates
+carabeners
+chalk
+climbing helmet
+climbing rope
+crashpads
+dumbbells
+elliptical
+foam roller
+harness
+jump ropes
+kettlebells
+locker room
+medicine balls
+stairmaster
+oly platform
+parking
+personal trainer
+physical therapy
+pool
+power rack
+quickdraws
+resistance bands
+rings
+rock climbing shoes
+rowers
+sauna
+shower
+squat rack
+stationary bikes
+stretch area
+towels
+tredmill
+tv
+wifi
+yoga mats
+-->
 {% block bodycontent %}
 <div class="container">
-  <div class="row">
-    <div class="col-lg-12">
-<h2><u>Browse Gyms</u></h2>
-<table style="width:100%">
-  <tr>
-    <td style="width:75%">
+  <div class="row row-1">
+    <div class="col-xs-8">
+      <h2><u>Browse Gyms</u></h2>
+      <!--not table, but series of expandable lists-->
       <div class="scroll-pane">
-	<br>
-	Search for a gym
-	<table>
-	  <form method="POST">
-	  <tr>
-	    <td>By Price</td>
-	    <td>By Type</td>
-	    <td>By Equipment</td>
-	    <td>By Location</td>
-	  </tr>
-	  <tr>
-	    <td>
+      <form method="POST">
+	
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#priceInfo" aria-expanded="false" aria-control="priceInfo">+ By Price</div>
+	<div class="collapse sub-div" id="priceInfo">
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="15:month">&lt;$15 per month<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="50:month">&lt;$50 per month<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="100:month">&lt;$100 per month<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="10:class">&lt;$10 per class<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="25:class">&lt;$25 per class<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
 	      <input type="radio" name="price" class="priceradio" value="50:class">&lt;$50 per class<br>
-	      <input type="radio" name="price" class="priceradio priceradioinput" value="permonth">&lt;<input name="permonthamount" class="permonthamount" type="text" size="3" disabled> per month<br>
-	      <input type="radio" name="price" class="priceradio priceradioinput" value="perclass">&lt;<input name="perclassamount" class="perclassamount" type="text" size="3" disabled> per class<br>
-	      <button type="button" onclick="clearSelection('priceradio')">Clear</button>
-	    </td>
-	    <td>
-	      <input type="radio" name="gymtype" class="typeradio" value="rec">Recreational Fitness<br>
-	      <input type="radio" name="gymtype" class="typeradio" value="yoga">Yoga/Pilates<br>
-	      <input type="radio" name="gymtype" class="typeradio" value="martial">Martial Arts<br>
-	      <input type="radio" name="gymtype" class="typeradio" value="xfit">Crossfit<br>
-	      <input type="radio" name="gymtype" class="typeradio" value="rock">Rock Climbing<br>
-	      <button type="button" onclick="clearSelection('typeradio')" >Clear</button>
-	    </td>
-	    <td>
-	      <input type="checkbox" class="equipmentradio" name="squat">Squat Rack<br>
-	      <input type="checkbox" class="equipmentradio" name="bench">Bench<br>
-	      <input type="checkbox" class="equipmentradio" name="cardio">Cardio<br>
-	      <input type="checkbox" class="equipmentradio" name="pool">Pool<br>
-	      <button type="button" onclick="clearSelection('equipmentradio')">Clear</button>
-	    </td>
-	    <td>
-	      <input type="radio" class="locradio" name="loc" value="5">&lt;5 miles from current location<br>
-	      <input type="radio" class="locradio" name="loc" value="10">&lt;10 miles from current location<br>
-	      <input type="radio" class="locradio" name="loc" value="25">&lt;25 miles from current location<br>
-	      <input type="radio" class="locradio" name="loc" value="50">&lt;50 miles from current location<br>
-	      <input type="radio" class="locradio locradioinput" name="loc" value="current">&lt;<input class="currentamount" type="text" size="3" disabled> miles from current location<br>
-	      <input type="radio" class="locradio locradioinput" name="loc" value="otheraddress">&lt;<input class="otheraddressamount" type="text" size="3" disabled> miles from <input class="otheraddressamount" type="text" name="userloc" placeholder="other location" disabled><br>
-	      <input type="radio" class="locradio locradioinput" name="loc" value="twoloc">Or, enter your home and work addresses, and we'll find a gym in between!<br>
-	      <input type="text" class="twolocamount" placeholder="Address 1" name="ad1" disabled><br>
-	      <input type="text" class="twolocamount" placeholder="Address 2" name="ad2" disabled><br>
-	      <button type="button" onclick="clearSelection('locradio')">Clear</button><br>
-	    </td>
-	  </tr>
-	  <tr>
-	    <td>
-	      <input class="btn btn-default btn-lg" type="submit">
-	    </td>
-	  </tr>
-	  </form>
-	</table>
-	<div id="gymInfo"></div>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="price" class="priceradio priceradioinput" value="permonth">
+	      <div class="form-group">
+		<div class="input-group">
+		  <div class="input-group-addon">&lt;$</div>
+		  <input class="permonthamount form-control" name="permonthamount" type="text" size="3" disabled>
+		  <div class="input-group-addon"> per month</div>
+		</div>
+	      </div>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="price" class="priceradio priceradioinput" value="perclass">
+	      <div class="form-group">
+		<div class="input-group">
+		  <div class="input-group-addon">&lt;$</div>
+		  <input name="perclassamount" class="form-control perclassamount" type="text" size="3" disabled>
+		  <div class="input-group-addon"> per class<br>
+		  </div>
+		</div>
+	    </label>
+	    </div>
+	    <button class="btn btn-default" type="button" onclick="clearSelection('priceradio')">Clear</button>
+	  </div>
+	</div>
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#typeInfo" aria-expanded="false" aria-control="typeInfo">+ By Type</div>
+	<div id="typeInfo" class="collapse sub-div">
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="rec">Recreational Fitness<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="yoga">Yoga/Pilates<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="martial">Martial Arts<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="xfit">Crossfit<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="rock">Rock Climbing<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="dance">Dance<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" name="gymType" class="typeradio" value="nutrition">Nutrition/Weight Loss<br>
+	    </label>
+	  </div>
+	  <button class="btn btn-default" type="button" onclick="clearSelection('typeradio')" >Clear</button>
+	</div>
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#equipmentInfo" aria-expanded="false" aria-control="equipmentInfo">+ By Equipment</div>
+	<div id="equipmentInfo" class="collapse sub-div">
+	  <!--<div class="div-hover sub-div collapsed" data-toggle="collapse" href="#weights">+ Weights:</div>
+	  <div id="weights" class="collapse sub-sub-div">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="power rack">Power Rack<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="squat">Squat Rack<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="bench">Bench<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="deadlift">Deadlift Space<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="olympic weightlifting platform">Olympic Weightlifting Platform<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="dumb">Dumbbells<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="kettle">Kettlebells<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="barbells">Barbells<br>
+	      </label>
+	    </div>
+	  </div>-->
+
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#sports">+ Sports-specific:</div>
+	  <div id="sports" class="collapse sub-sub-div">
+	    <h5><u>Swimming</u></h5>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="pool">Pool<br>
+	      </label>
+	    </div>
+	    <h5><u>Endurance</u></h5>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="tredmill">Tredmill<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="elliptical">Elliptical<br>
+	      </label>
+	    </div>
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" class="equipmentradio" name="stairs">Stairs<br>
+	      </label>
+	    </div>
+	  </div>
+
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#weights">+ Weights</div>
+	  <div id="weights" class="collapse sub-sub-div">
+	    {{weights|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#endurance">+ Endurance</div>
+	  <div id="endurance" class="collapse sub-sub-div">
+	    {{endurance|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#hygene">+ Hygene</div>
+	  <div id="hygene" class="collapse sub-sub-div">
+	    {{hygene|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#fun">+ Fun</div>
+	  <div id="fun" class="collapse sub-sub-div">
+	    {{fun|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#services">+ Services</div>
+	  <div id="services" class="collapse sub-sub-div">
+	    {{services|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#mobility">+ Mobility</div>
+	  <div id="mobility" class="collapse sub-sub-div">
+	    {{mobility|safe}}
+	  </div>
+	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#all">+ All</div>
+	  <div id="all" class="collapse sub-sub-div">
+	    {{equipment|safe}}
+	  </div>
+	  <button class="btn btn-default" type="button" onclick="clearSelection('equipmentcheckbox')">Clear</button>
+	</div>
+
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#classInfo" aria-expanded="false" aria-control="classInfo">+ By Class</div>
+	<div id="classInfo" class="collapse sub-div">
+	  {{gymClass|safe}}
+	</div>
+
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#locInfo" aria-expanded="false" aria-control="locInfo">+ By Location</div>
+	<input type="hidden" id="myLoc" name="myLoc" disabled>
+	<div id="locInfo" class="collapse sub-div">
+	  <div class="radio">
+	    <label>
+	  <input type="radio" class="locradio" name="loc" value="5">&lt;5 miles from current location<br>
+	</label>
       </div>
-    </td>
-    <td style="width:50%">
+      <div class="radio">
+	<label>
+	  <input type="radio" class="locradio" name="loc" value="10">&lt;10 miles from current location<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" class="locradio" name="loc" value="25">&lt;25 miles from current location<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" class="locradio" name="loc" value="50">&lt;50 miles from current location<br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="current">&lt;<input class="form-control currentamount" type="text" name="userDistance" size="3" disabled> miles from current location<br>
+	    </label>
+	  </div>
+	  <div class="radio form-group">
+	    <label>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="otheraddress">&lt;<input name="otheraddressamount" class="otheraddressamount" type="text" size="3" disabled> miles from <input class="otheraddressamount" type="text" name="userLoc" placeholder="other location" disabled><br>
+	    </label>
+	  </div>
+	  <div class="radio">
+	    <label>
+	      <input type="radio" class="locradio locradioinput" name="loc" value="twoloc">Or, enter your home and work addresses, and we'll find a gym in between!<br>
+	    </label>
+	  </div>
+	  <input type="text" class="twolocamount" placeholder="Home (enter 'here' if home)" name="ad1" disabled><br>
+	  <input type="text" class="twolocamount" placeholder="Work (enter 'here' if work)" name="ad2" disabled><br>
+	  <button class="btn btn-default" type="button" onclick="clearSelection('locradio')">Clear</button><br>
+	</div>
+	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#hoursInfo" aria-expanded="false" aria-control="hoursInfo">+ By Hours</div>
+	<div id="hoursInfo" class="collapse sub-div">
+	  <div class="form-group">
+	    <div id="time">
+	      <div class="input-group time" id="time1">
+		<div class="input-group-addon">From </div>
+		<input type="time" name="from1" class="form-control">
+		<div class="input-group-addon"> to </div>
+		<input type="time" name="to1" class="form-control">
+		<div class="input-group-addon">on</div>
+		<select class="form-control" name="day1">
+		  <option>Weekdays</option>
+		  <option>Weekends</option>
+		  <option>Monday</option>
+		  <option>Tuesday</option>
+		  <option>Wednesday</option>
+		  <option>Thursday</option>
+		  <option>Friday</option>
+		  <option>Saturday</option>
+		  <option>Sunday</option>
+		</select>
+		<div onclick="removeTime(this.parentElement.id)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+	      </div>
+	    </div>
+	    <button onclick="addTime()" type="button" class="btn btn-default">+Add another time range</button>
+	  </div>
+	</div>
+	&nbsp;<button type="submit" class="btn btn-lg">Search</button>
+	<br>
+	<br>
+      </form>
+      </div>
+      <script>
+      </script>
+    </div>
+    <div class="col-xs-2">
       <div id="map" style="width:300px; height:300px;"></div>
-    </td>
-  </tr>
-  <tr>
-    <table class="table table-hover">
-      {% if gyms|length > 0 and showAll == "False" %}
-      <thead>
-	<tr>
-	  <th>Name</th>
-	  <th>Price</th>
-	  <th>Hours<th>
-	  <th>Address</th>
-	</tr>
-      </thead>
-      {% for gym in gyms %}
-      <tr onclick="window.document.location='/gym/{{gym['id']}}'">
-	<td>{{gym['name']}}</td>
-	<td>{{gym['price']}}</td>
-	<td>{{gym['hours']}}</td>
-	<td>{{gym['address']}}</td>
-      </tr>
-      {% endfor %}
-      {% endif %}
-    </table>
-  </tr>
-</table>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script>
-var gyms = {{gyms|tojson|safe}};
-{% if showAll == "True" %}
-var showAll = true;
-{% else %}
-var showAll = false;
-{% endif %}
-</script>
+    </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+	<table class="table table-hover table-bordered">
+	  {% if gyms|length > 0 and not showAll %}
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Price</th>
+	      <th>Hours</th>
+	      <th>Address</th>
+	    </tr>
+	  </thead>
+	  {% for gym in gyms %}
+	  <tr onclick="window.document.location='/gym/{{gym['id']}}'">
+	    <td>{{gym['name']}}</td>
+	    <td>${{gym['price']}}</td>
+	    <td>{{gym['hours']|safe}}</td>
+	    <td>{{gym['address']}}</td>
+	  </tr>
+	  {% endfor %}
+	  {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="/static/scripts/browsegyms.js"></script>
-</div>
-</div>
-</div>
 {% endblock bodycontent %}
