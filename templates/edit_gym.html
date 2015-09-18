@@ -32,26 +32,58 @@ sendGym = false;
   <div class="row">
 <h2>Amenities:</h2>
 <input type="hidden" id="gymId" value="{{gymId}}">
-<form id="equipment">
-{{equipment|safe}}
+<form>
+{% set index = 1 %}
+<div class="form-group">
+  <div id="equipment">
+    {% for key in equipment %}
+    <div class="input-group equipment" id="equipment{{index}}">
+      <div class="input-group-addon">Equipment</div>
+      <input name="equipmentName{{index}}" class="form-control" value="{{key}}">
+      <div class="input-group-addon">Amount</div>
+      <input name="equipmentAmount{{index}}" class="form-control" type="number" value="{{equipment[key]}}">
+      <div onclick="removeRow(this.parentElement.id, 'equipment')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+    </div>
+    {% endfor %}
+  </div>
+  <button onclick="addEquipment()" type="button" class="btn btn-default">+Add another piece of equipment</button>
+</div>
 <button class="btn" type="button" onclick="updateInfo('Equipment', sendGym);">Update</button>
 </form>
 <br>
 <form class="form-inline">
   <div class="form-group">
-    Price: <div class="input-group">
-      <div class="input-group-addon">$</div><input class="form-control" id="Price" type="number" value={{priceNum}}>
+    Prices:
+    <div id="prices">
+    {% for price in gymPrices %}
+    {{price[0]}} per {{price[1]}}
+      <div class="input-group price" id="price1">
+	<div class="input-group-addon">$</div><input class="form-control" name="priceValue1" type="number" value={{price[0]}}>
+	<div class="input-group-addon">per</div>
+	<select name="priceUnit1" class="form-control {{price[1]}}">
+	  <option>month</option>
+	  <option>year</option>
+	  <option>class</option>
+	</select>
+	<div onclick="removeRow(this.parentElement.id, 'price')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+      </div>
+      <script>
+	$(".{{price[1]}}").val("{{price[1]}}")
+      </script>
+    {% endfor %}
     </div>
-    per 
-    <select class="form-control {{priceUnit}}">
-      <option>month</option>
-      <option>year</option>
-      <option>class</option>
-    </select>
-    <script>
-      $(".{{priceUnit}}").val("{{priceUnit}}")
-    </script>
+    <button onclick="addPrice()" type="button" class="btn btn-default">+Add another pricing</button>
   </div>
+  <!--<div class="input-group">
+      <div class="input-group-addon">$</div><input class="form-control" id="Price" type="number" value={{priceNum}}>
+      </div>
+      per 
+      <select class="form-control {{priceUnit}}">
+	<option>month</option>
+	<option>year</option>
+	<option>class</option>
+      </select>-->
+  <br>
   <button type="button" class="btn" onclick="updateInfo('Price', sendGym)">Update</button><br>
 </form>
 <br>
@@ -62,10 +94,12 @@ Hours:
     {% for key in hours %}
     {% for time in hours[key] %}
     {% if key=="Weekends" or key=="Weekdays" or key=="Everyday" %}
-    <div onclick="expand('{{key}}', this);" class="form-control btn" class="form-control btn" role="button">Expand days</div>
+    <div id="expand{{key}}button" onclick="expand('{{key}}', this);" class="form-control btn" role="button">Expand days</div>
     <div class="input-group time" id="expand{{key}}">
+    {% set removeExpand = "removeExpand('expand"+key+"button')" %}
     {% else %}
     <div class="input-group time">
+    {% set removeExpand = "" %}
     {% endif %}
       <div class="input-group-addon">From </div>
       <input type="time" name="from0" class="form-control hours-info-from" value={{time[0]}}>
@@ -84,7 +118,7 @@ Hours:
 	<option>Saturday</option>
 	<option>Sunday</option>
       </select>
-      <div onclick="removeTime(this.parentElement.id)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+      <div onclick="removeRow(this.parentElement.id, 'time');{{removeExpand}}" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
     </div>
     <script>
       $(".{{key}}").val("{{key}}");
@@ -97,8 +131,8 @@ Hours:
 </form>
 <button type="button" class="btn" onclick="updateInfo('Hours', sendGym)">Update</button><br>
 <!--TODO FIGURE OUT WHAT TO DO ABOUT QUOTES-->
-Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
-<button class="btn" onclick="updateInfo('Requirements', sendGym)">Update</button><br>
+<!--Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
+<button class="btn" onclick="updateInfo('Requirements', sendGym)">Update</button><br>-->
 <br>
 Misc/Extras:<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>
 <button class="btn" type="button" onclick="updateInfo('Misc', sendGym)">Update</button><br>

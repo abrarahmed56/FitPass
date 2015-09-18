@@ -62,7 +62,7 @@ pre
     {% include "nav_links/about_link.html" %}
     {% include "nav_links/contact_link.html" %}
     {% include "nav_links/logout_link.html" %}
-    {% elif goerLoggedIn or adminLoggedIn %}
+    {% elif goerLoggedIn %}
     {% include "nav_links/about_link.html" %}
     {% include "nav_links/contact_link.html" %}
     {% include "nav_links/logout_link.html" %}
@@ -521,6 +521,9 @@ yoga mats
     </div>
     <div class="col-xs-2">
       <div id="map" style="width:300px; height:300px;"></div>
+      <form onsubmit="searchGyms(); return false;">
+      Search for your gym: <input id="search" type="text"><button class="btn">Search</button>
+      </form>
     </div>
     </div>
     <div class="row">

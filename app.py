@@ -25,37 +25,12 @@ LATCOL = 3
 LNGCOL = 4
 ADDRESSCOL = 5
 TYPECOL = 6
-PRICECOL = 7
-MONDAYCOL = 8
-TUESDAYCOL = 9
-WEDNESDAYCOL = 10
-THURSDAYCOL = 11
-FRIDAYCOL = 12
-SATURDAYCOL = 13
-SUNDAYCOL = 14
-REQCOL = 15
-MISCCOL = 16
-LASTUPDATECOL = 17
-EQUIPMENTSTARTCOL = 18
-SQUATCOL = 18
-BENCHCOL = 19
-CARDIOCOL = 20
-POOLCOL = 21
-hoursColDict = {
-    "Monday": MONDAYCOL,
-    "Tuesday": TUESDAYCOL,
-    "Wednesday": WEDNESDAYCOL,
-    "Thursday": THURSDAYCOL,
-    "Friday": FRIDAYCOL,
-    "Saturday": SATURDAYCOL,
-    "Sunday": SUNDAYCOL
-}
+MISCCOL = 7
+LASTUPDATECOL = 8
 globalEquipmentList = ['barbells', 'basketball court', 'belay device', 'bench press', 'bumper plates', 'chalk', 'crashpads', 'dumbbells', 'elliptical', 'foam roller', 'jump ropes', 'kettlebells', 'locker room', 'medicine balls', 'stairmaster', 'olympic weightlifting platform', 'parking', 'personal trainer', 'physical therapy', 'pool', 'power rack', 'resistance bands', 'rings', 'rock climbing shoes', 'rowers', 'sauna', 'shower', 'squat rack', 'stationary bikes', 'stretching area', 'towels', 'tredmill', 'television', 'wifi', 'yoga mats', 'deadlift space', 'track']
 globalClassesList = ['yoga', 'pilates', 'zumba', 'rock climbing']
 globalEquipmentList.sort()
 globalClassesList.sort()
-UPVOTECOL = EQUIPMENTSTARTCOL + len(globalEquipmentList) + len(globalClassesList)
-DOWNVOTECOL = UPVOTECOL + 1
 
 @app.route('/')
 def index():
@@ -689,14 +664,13 @@ def edit_gym(gym_id=None):
         else:
             flash("You have to log in before accessing this page")
             return redirect(url_for('login'))
-        equipment = ""
-        equipmentList = globalEquipmentList
-        equipmentList.sort()
+        #equipment = ""
+        #equipmentList = globalEquipmentList
+        #equipmentList.sort()
         j = 0
         if gym==None:
             if manager_logged_in:
                 return redirect(url_for("select_gym"))
-            requirements = ""
             misc = ""
             monday = ""
             tuesday = ""
@@ -710,7 +684,8 @@ def edit_gym(gym_id=None):
             price_num = ""
             price_unit = "month"
             send_gym = True
-            while j < len(equipmentList):
+            equipment = ""
+            '''while j < len(equipmentList):
                 e = equipmentList[j]
                 words = e.split(" ")
                 i = 0
@@ -719,20 +694,48 @@ def edit_gym(gym_id=None):
                     i = i + 1
                 capE = " ".join(words)
                 undE = "_".join(words)
-                equipment = equipment + str('''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s><input id='%s' name='%s' type="text" value=0 size="2" maxamount="2" disabled>%s</label></div>'''%(e, e, e, undE, capE))
-                j = j + 1
+                equipment = equipment + str(''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s><input id='%s' name='%s' type="text" value=0 size="2" maxamount="2" disabled>%s</label></div>''%(e, e, e, undE, capE))
+                j = j + 1'''
         else:
             gym_id = gym[IDCOL]
-            requirements = gym[REQCOL]
+            session['gym_id'] = gym_id
+            #requirements = gym[REQCOL]
             misc = gym[MISCCOL]
-            monday = gym[MONDAYCOL]
+            c.execute("SELECT * FROM GymHours WHERE GymId=%s", (gym_id,))
+            gym_hours_dict = {}
+            gym_hours = c.fetchall()
+            for gym_hour in gym_hours:
+                print gym_hour
+                if gym_hour[1] in gym_hours_dict:
+                    gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
+                else:
+                    gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
+            monday = ""
+            tuesday = ""
+            wednesday = ""
+            thursday = ""
+            friday = ""
+            saturday = ""
+            sunday = ""
+            '''monday = gym[MONDAYCOL]
             tuesday = gym[TUESDAYCOL]
             wednesday = gym[WEDNESDAYCOL]
             thursday = gym[THURSDAYCOL]
             friday = gym[FRIDAYCOL]
             saturday = gym[SATURDAYCOL]
-            sunday = gym[SUNDAYCOL]
-            while j < len(equipmentList):
+            sunday = gym[SUNDAYCOL]'''
+            c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (gym_id,))
+            gym_equipment = c.fetchall()
+            print gym_equipment
+            print gym_id
+            c.execute("SELECT * FROM GymEquipment")
+            print c.fetchall()
+            gym_equipment_dict = {}
+            for result in gym_equipment:
+                gym_equipment_dict[result[1]] = result[2]
+            print gym_equipment_dict
+            equipment = gym_equipment_dict
+            '''while j < len(equipmentList):
                 e = equipmentList[j]
                 words = e.split(" ")
                 i = 0
@@ -746,17 +749,24 @@ def edit_gym(gym_id=None):
                 if gym[j+EQUIPMENTSTARTCOL] <= 0:
                     disabled = " disabled"
                     checked = ""
-                    equipment = equipment + str('''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s %s><input id='%s' name='%s' type="text" value=%s size="2" maxamount="2" %s>%s</label></div>'''%(e, e, checked, e, undE, gym[j+EQUIPMENTSTARTCOL], disabled, capE))
-                j = j + 1
-            hours = dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+                    equipment = equipment + str(''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s %s><input id='%s' name='%s' type="text" value=%s size="2" maxamount="2" %s>%s</label></div>''%(e, e, checked, e, undE, gym[j+EQUIPMENTSTARTCOL], disabled, capE))
+                j = j + 1'''
+            #hours = dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+            hours = gym_hours_dict
             print "hours: "
             print hours
             gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
-            price_num = gym[PRICECOL].split(":")[0]
-            price_unit = gym[PRICECOL].split(":")[1]
+            #price_num = gym[PRICECOL].split(":")[0]
+            #price_unit = gym[PRICECOL].split(":")[1]
+            c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (gym_id,))
+            gym_prices = c.fetchall()
+            gym_prices_list = []
+            for gym_price in gym_prices:
+                gym_prices_list.append([gym_price[1], gym_price[2]])
             send_gym = False
         print send_gym
-        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, requirements=requirements, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, priceNum=price_num, priceUnit=price_unit, sendGym=send_gym)
+        #equipment=""
+        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym)
 
 def dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday):
     hours = {}
@@ -815,7 +825,7 @@ def removeImages():
             return "Image removal successful!"
     return "Image removal unsuccessful"
 
-@app.route('/gym/<id>')
+@app.route('/gym/<id>', methods=['GET', 'POST'])
 def gympage(id):
     admin_logged_in=False
     manager_logged_in=False
@@ -831,33 +841,179 @@ def gympage(id):
         c = con.cursor()
         c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (id,))
         gym = c.fetchone()
+        user_price_updates_dict = {}
+        c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            #append_to_dict(user_updates_dict, info_available)
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_price_updates_dict:
+                    if info[4] == "":
+                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3])
+                    else:
+                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3] + " for " + info[4])
+                else:
+                    if info[4] == "":
+                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3]]
+                    else:
+                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3] + " for " + info[4]]
+        user_equipment_updates_dict = {}
+        c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_equipment_updates_dict:
+                    user_equipment_updates_dict[user_email].append(str(info[3]) + " " + info[2])
+                else:
+                    user_equipment_updates_dict[user_email] = [str(info[3]) + " " + info[2]]
+        user_hours_updates_dict = {}
+        c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_hours_updates_dict:
+                    user_hours_updates_dict[user_email].append(info[2] + ": From " + info[3] + " to " + info[4])
+                else:
+                    print info
+                    user_hours_updates_dict[user_email] = [info[2] + ": From " + info[3] + " to " + info[4]]
+        user_comments_dict = {}
+        c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_comments_dict:
+                    user_comments_dict[user_email].append(info[2])
+                else:
+                    user_comments_dict[user_email] = [info[2]]
         if not gym:
-            c.execute("SELECT * FROM UserGymUpdates WHERE GymId=%s", (id,))
+            #Gym is not verified by a manager
+            c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
             info_available = c.fetchall()
+            c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
+            info_available = info_available + c.fetchall()
+            c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
+            info_available = info_available + c.fetchall()
+            c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
+            info_available = info_available + c.fetchall()
             print info_available
-            if not info_available:
-                return render_template("new_gym.html", id=id, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
+            print user_equipment_updates_dict
+            print user_price_updates_dict
+            print user_hours_updates_dict
+            print user_comments_dict
+            #return str(info_available)
+            #return 'hi'
+            url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR").replace("CLIENT_SECRET", "YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA").replace("GYM_ID", id)
+            jsondata = urllib2.urlopen(url)
+            gym_name = json.loads(jsondata.read())['response']['venue']['name']
+            if not (user_equipment_updates_dict or user_price_updates_dict or user_hours_updates_dict or user_comments_dict):
+                #Unverified gym, no user info
+                return render_template("new_gym.html", id=id, name=gym_name, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
             else:
-                formatted_info = "<h1>" + info_available[0][NAMECOL] + "</h1>"
-                for gymsql in info_available:
-                    gym_name = gymsql[NAMECOL]
-                    gym_price = gymsql[PRICECOL]
-                    gym_req = gymsql[REQCOL]
-                    gym_hours = dictionarifyHours(gymsql[MONDAYCOL], gymsql[TUESDAYCOL], gymsql[WEDNESDAYCOL], gymsql[THURSDAYCOL], gymsql[FRIDAYCOL], gymsql[SATURDAYCOL], gymsql[SUNDAYCOL])
-                    gym_equipment = []
-                    last_updated = gymsql[LASTUPDATECOL]
-                    #formatted_info = formatted_info + str(gymsql) + "<br>"
-                    #TODO USE USER EMAIL
-                    formatted_info = formatted_info + "<br>" + last_updated + "<br>Price: " + str(gym_price) + "<br>Hours: " + str(gym_hours) + "<br>Equipment: " + str(gym_equipment)
-                return render_template("new_gym_with_info.html", id=id, formattedInfo=formatted_info, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
+                #Unverified gym, user info available
+                '''formatted_info = "<h1>" + gym_name + "</h1>"
+                user_changes_dict = {}
+                for result in info_available:
+                    user_email = get_user_email(result[0])
+                    if result[2] == "Price":
+                        if user_email in user_changes_dict:
+                            user_changes_dict[user_email].append("Price: $" + result[3].replace(":", " per ") + "<br>")
+                        else:
+                            user_changes_dict[user_email] = ["Price: $" + result[3].replace(":", " per ") + "<br>"]
+                    elif result[2].split(":")[0] == "Equipment":
+                        if user_email in user_changes_dict:
+                            user_changes_dict[user_email].append(result[3] + " " + result[2].split(":")[1] + "s<br>")
+                        else:
+                            user_changes_dict[user_email] = [result[3] + " " + result[2].split(":")[1] + "s<br>"]
+                for user_email in user_changes_dict:
+                    formatted_info += user_email + "<br>"
+                    for change in user_changes_dict:
+                        formatted_info += change + "<br>"'''
+                return render_template("new_gym_with_info.html", id=id, name=gym_name, equipment=user_equipment_updates_dict, prices=user_price_updates_dict, hours=user_hours_updates_dict, comments=user_comments_dict, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
+            #return str(info_available)'''
+        #Gym is verified by manager
         print gym
-        c.execute("SELECT * FROM UserGymUpdates WHERE GymId=%s", (id,))
-        results = c.fetchall()
+        '''user_price_updates_dict = {}
+        c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            #append_to_dict(user_updates_dict, info_available)
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_price_updates_dict:
+                    if info[4] == "":
+                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3])
+                    else:
+                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3] + " for " + info[4])
+                else:
+                    if info[4] == "":
+                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3]]
+                    else:
+                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3] + " for " + info[4]]
+        user_equipment_updates_dict = {}
+        c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_equipment_updates_dict:
+                    user_equipment_updates_dict[user_email].append(str(info[3]) + " " + info[2])
+                else:
+                    user_equipment_updates_dict[user_email] = [str(info[3]) + " " + info[2]]
+        user_hours_updates_dict = {}
+        c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_hours_updates_dict:
+                    user_hours_updates_dict[user_email].append(info[2] + ": From " + info[3] + " to " + info[4])
+                else:
+                    print info
+                    user_hours_updates_dict[user_email] = [info[2] + ": From " + info[3] + " to " + info[4]]
+        user_comments_dict = {}
+        c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
+        info_available = c.fetchall()
+        if info_available:
+            for info in info_available:
+                user_email = get_user_email(info[0])
+                if user_email in user_comments_dict:
+                    user_comments_dict[user_email].append(info[2])
+                else:
+                    user_comments_dict[user_email] = [info[2]]'''
+        name = gym[NAMECOL]
+        prices = []
+        c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (id,))
+        gym_prices = c.fetchall()
+        gym_prices_list = []
+        for gym_price in gym_prices:
+            gym_prices_list.append([gym_price[1], gym_price[2]])
+        misc = gym[MISCCOL]
+        c.execute("SELECT * FROM GymHours WHERE GymId=%s", (id,))
+        gym_hours = c.fetchall()
+        gym_hours_dict = {}
+        for gym_hour in gym_hours:
+            if gym_hour[1] in gym_hours_dict:
+                gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
+            else:
+                gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
+        hours = gym_hours_dict
+        c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (id,))
+        gym_equipment = c.fetchall()
+        gym_equipment_dict = {}
+        for result in gym_equipment:
+            gym_equipment_dict[result[1]] = result[2]
+        equipment = gym_equipment_dict
+        gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
+        return render_template("gym_page.html", name=name, gymPrices=gym_prices_list, misc=misc, hours=hours, gym=gym, addressCol=ADDRESSCOL, lastUpdateCol=LASTUPDATECOL, gymImgs=gym_imgs, gymId=gym[IDCOL], adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, userPrices=user_price_updates_dict, userEquipment=user_equipment_updates_dict, userHours=user_hours_updates_dict, userComments=user_comments_dict, equipment=equipment)
+        """results = c.fetchall()
         user_updates = False
         if results:
             #TODO MATCH PRICE, REQUIREMENTS, AND MISC
             user_updates = '''
-<script src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 <style>
 th, td {
 white-space: nowrap;
@@ -872,19 +1028,34 @@ overflow: auto;
             table_head = "<thead><tr>"
             table_body = "<tbody><tr>"
             confirm_changes_row = "<tr>"
+            user_changes_dict = {}
             for result in results:
                 #user_updates = user_updates + "<td>"
                 print result
-                print result[USERCOL]
-                user_email = get_user_email(result[USERCOL])
-                table_head = table_head + "<th>" + user_email + "</th>"
+                print "result"
+                print result[0]
+                user_email = get_user_email(result[0])
+                '''table_head = table_head + "<th>" + user_email + "</th>"
                 c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=1", (result[IDCOL], result[USERCOL]))
                 upvotes = len(c.fetchall())
                 c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=-1",(result[IDCOL], result[USERCOL]))
                 downvotes = len(c.fetchall())
                 confirm_changes_row = confirm_changes_row + "<td>Upvotes: <div id='" + user_email + "upvotes'>" + str(upvotes) + "</div><br>Downvotes: <div id='" + user_email + "downvotes'>" + str(downvotes) + "</div><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, 1)' class='btn'>Confirm Changes</button><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, -1)' class='btn'>Downvote Changes</button></td>"
                 table_body = table_body + "<td>"
-                for x in range(MONDAYCOL, SUNDAYCOL):
+                #RESUME HERE HERE HERE HERE'''
+                if result[2] == "Price":
+                    if user_email in user_changes_dict:
+                        user_changes_dict[user_email].append("Price: $" + result[3].replace(":", " per ") + "<br>")
+                    else:
+                        user_changes_dict[user_email] = ["Price: $" + result[3].replace(":", " per ") + "<br>"]
+                    #table_body = table_body + "Price: $" + result[3].replace(":", " per ") + "<br>"
+                elif result[2].split(":")[0] == "Equipment":
+                    if user_email in user_changes_dict:
+                        user_changes_dict[user_email].append(result[3] + " " + result[2].split(":")[1] + "s<br>")
+                    else:
+                        user_changes_dict[user_email] = [result[3] + " " + result[2].split(":")[1] + "s<br>"]
+                    #table_body = table_body + result[3] + " " + result[2].split(":")[1] + "s<br>"
+                '''for x in range(MONDAYCOL, SUNDAYCOL):
                     print "user input, then gym:"
                     print result[x]
                     print gym[x]
@@ -897,12 +1068,23 @@ overflow: auto;
                     if result[x] != gym[x]:
                         table_body = table_body + "<br>" + globalEquipmentList[x-EQUIPMENTSTARTCOL] + ": " + str(result[x])
                         #user_updates = user_updates + "<td>" +  globalEquipmentList[x-EQUIPMENTSTARTCOL] + ": " + str(result[x]) + "</td>"
-                table_body = table_body + "</td>"
+                '''
+                #table_body = table_body + "</td>"
+            for user_email in user_changes_dict:
+                table_head = table_head + "<th>" + user_email + "</th>"
+                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=1", (result[IDCOL], result[USERCOL]))
+                upvotes = len(c.fetchall())
+                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=-1",(result[IDCOL], result[USERCOL]))
+                downvotes = len(c.fetchall())
+                confirm_changes_row = confirm_changes_row + "<td>Upvotes: <div id='" + user_email + "upvotes'>" + str(upvotes) + "</div><br>Downvotes: <div id='" + user_email + "downvotes'>" + str(downvotes) + "</div><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, 1)' class='btn'>Confirm Changes</button><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, -1)' class='btn'>Downvote Changes</button></td>"
+                table_body = table_body + "<td>"
+                for change in user_changes_dict[user_email]:
+                    table_body = table_body + change + "<br>"
             table_head = table_head + "</tr></thead>"
             table_body = table_body + "</tr>" + confirm_changes_row + "</tr></tbody>"
             print table_body
             #user_updates = user_updates + "</td>"
-            user_updates = user_updates + table_head + table_body + """
+            user_updates = user_updates + table_head + table_body + ""
 </table>
 <script>
 $('#userGymUpdates').DataTable({
@@ -912,31 +1094,62 @@ $('#userGymUpdates').DataTable({
 <script>
 $('#userGymUpdatesContainer').hide();
 </script>
-</div>"""
+</div>""
             #user_updates = results
             print "user updated"
         else:
             print "user no update"
         name = gym[NAMECOL]
-        price = gym[PRICECOL].replace(":", " per ")
-        requirements = gym[REQCOL]
+        prices = []
+        c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (id,))
+        gym_prices = c.fetchall()
+        gym_prices_list = []
+        for gym_price in gym_prices:
+            gym_prices_list.append([gym_price[1], gym_price[2]])
+        #price = gym[PRICECOL].replace(":", " per ")
+        #requirements = gym[REQCOL]
         misc = gym[MISCCOL]
         #hours = gym[HOURSCOL]
-        hours="<br>Monday: " + gym[MONDAYCOL] + \
+        '''hours="<br>Monday: " + gym[MONDAYCOL] + \
         "<br>Tuesday: " + gym[TUESDAYCOL] + \
         "<br>Wednesday: " + gym[WEDNESDAYCOL] + \
         "<br>Thursday: " + gym[THURSDAYCOL] + \
         "<br>Friday: " + gym[FRIDAYCOL] + \
         "<br>Saturday: " + gym[SATURDAYCOL] + \
         "<br>Sunday: <br>" + gym[SUNDAYCOL]
-        hours = hours.replace(": <br>", ": Closed<br>")
-        c.execute("SHOW COLUMNS FROM Gyms")
+        hours = hours.replace(": <br>", ": Closed<br>")'''
+        c.execute("SELECT * FROM GymHours WHERE GymId=%s", (id,))
+        gym_hours = c.fetchall()
+        gym_hours_dict = {}
+        for gym_hour in gym_hours:
+            if gym_hour[1] in gym_hours_dict:
+                gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
+            else:
+                gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
+        hours = gym_hours_dict
+        #c.execute("SHOW COLUMNS FROM Gyms")
         #print c.fetchall()
-        equipmentNames = []
+        c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (id,))
+        gym_equipment = c.fetchall()
+        gym_equipment_dict = {}
+        for result in gym_equipment:
+            gym_equipment_dict[result[1]] = result[2]
+        equipment = gym_equipment_dict
+        '''equipmentNames = []
         for b in c.fetchall()[EQUIPMENTSTARTCOL:]:
-            equipmentNames.append(b[0].replace("_", " "))
+            equipmentNames.append(b[0].replace("_", " "))'''
         gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
-    return render_template("gym_page.html", name=name, price=price, requirements=requirements, misc=misc, hours=hours, gym=gym, equipmentNames=equipmentNames, addressCol=ADDRESSCOL, equipmentStartCol=EQUIPMENTSTARTCOL, lastUpdateCol=LASTUPDATECOL, gymImgs=gym_imgs, gymId=gym[IDCOL], adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, userUpdates=user_updates)
+        print gym_prices_list
+    return render_template("gym_page.html", name=name, gymPrices=gym_prices_list, misc=misc, hours=hours, gym=gym, addressCol=ADDRESSCOL, lastUpdateCol=LASTUPDATECOL, gymImgs=gym_imgs, gymId=gym[IDCOL], adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, userUpdates=user_updates, equipment=equipment)
+"""
+'''def append_to_dict(user_updates_dict, info_available):
+    for info in info_available:
+        user_email = get_user_email(info[0])
+        if user_email in user_changes_dict:
+            user_changes_dict[user_email].append()
+        else:
+            user_changes_dict[user_email] = []
+'''     
 
 def get_user_email(user_id):
     con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
@@ -994,7 +1207,7 @@ def add_gym():
                 if 'gymId' not in request.form or 'gymName' not in request.form:
                     flash("Please select a gym")
                     return redirect(url_for("select_gym"))
-                if 'gymType' not in request.form or request.form['price'] == '' or request.form['to1'] == '' or request.form['from1'] == '':
+                if 'gymType' not in request.form or request.form['priceValue1'] == '' or request.form['to1'] == '' or request.form['from1'] == '':
                     flash("Please fill out the required fields")
                     return redirect(url_for("select_gym"))
             elif 'admin_id' in session:
@@ -1007,28 +1220,40 @@ def add_gym():
                     flash("Please fill out the required fields")
                     return redirect(url_for("admin_select_gym"))
             print request.form
-            gymId = request.form['gymId']
-            gymName = request.form['gymName']
-            gymLat = request.form['gymLat']
-            gymLng = request.form['gymLng']
-            gymType = request.form['gymType']
-            gymAddress = request.form['gymAddress']
-            print 'hi'
-            gymPrice = request.form['price'] + ":" + request.form['priceunit']
-            print 'hi'
+            gym_id = request.form['gymId']
+            gym_name = request.form['gymName']
+            gym_lat = request.form['gymLat']
+            gym_lng = request.form['gymLng']
+            gym_type = request.form['gymType']
+            gym_address = request.form['gymAddress']
             del formDict['gymId']
             del formDict['gymName']
             del formDict['gymLat']
             del formDict['gymLng']
             del formDict['gymType']
             del formDict['gymAddress']
-            del formDict['price']
-            del formDict['priceunit']
             #parse through hours- same as /browsegyms
-            hoursIndex = 1
             #fromList = []
             #toList = []
             #dayList = []
+            #gymPrice = request.form['priceValue1'] + ":" + request.form['priceUnit1']
+            print 'hi'
+            print formDict
+            pricesIndex = 1
+            gymPriceValue = request.form['priceValue1']
+            gymPriceUnit = request.form['priceUnit1']
+            while gymPriceValue and gymPriceUnit:
+                del formDict['priceValue'+str(pricesIndex)]
+                del formDict['priceUnit'+str(pricesIndex)]
+                if gymPriceValue != "":
+                    #gymPrice = gymPriceValue + ":" + gymPriceUnit
+                    c.execute("INSERT INTO GymPrices VALUES (%s, %s, %s)", (gym_id, gymPriceValue, gymPriceUnit))
+                    print "price value: " + str(gymPriceValue)
+                    print "price unit: " + str(gymPriceUnit)
+                    pricesIndex = pricesIndex + 1
+                    gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
+                    gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
+            hoursIndex = 1
             fromVar = request.form['from1']
             toVar = request.form['to1']
             dayVar = request.form['day1']
@@ -1037,8 +1262,13 @@ def add_gym():
                 del formDict['from'+str(hoursIndex)]
                 del formDict['to'+str(hoursIndex)]
                 del formDict['day'+str(hoursIndex)]
+                #TODO CHECK IF VALUES ENTERED ARE VALID--NO INTERSECTING HOURS
                 if fromVar != "" and toVar != "":
-                    hoursVar = fromVar + "-" + toVar
+                    #TODO UNDO REPLACE :, INSTEAD CHANGE LIMIT IN RESET
+                    #ACTUALLY, IT'LL SAVE MEMORY TO STORE WITHOUT IT
+                    #IDK
+                    c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar.replace(":", ""), toVar.replace(":", "")))
+                    '''hoursVar = fromVar + "-" + toVar
                     daysList = []
                     if dayVar == "Weekends":
                         daysList = ["Saturday", "Sunday"]
@@ -1050,38 +1280,41 @@ def add_gym():
                         if day in hoursDict:
                             hoursDict[day] = hoursDict[day] + ";" + hoursVar
                         else:
-                            hoursDict[day] = hoursVar
+                            hoursDict[day] = hoursVar'''
                     hoursIndex = hoursIndex + 1
                     fromVar = request.form.get("from"+str(hoursIndex), None)
                     toVar = request.form.get("to"+str(hoursIndex), None)
                     dayVar = request.form.get("day"+str(hoursIndex), None)
-            requirements = ''#request.form['requirements']
-            misc = ''#request.form['misc']
-            timeNow = datetime.datetime.now().ctime()
-            c.execute("SELECT * FROM Gyms WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gymId))
+            #requirements = ''#request.form['requirements']
+            #misc = request.form['misc']
+            misc = ''
+            timeNow = datetime.datetime.now().ctime() + " by Gym Manager"
+            c.execute("SELECT * FROM Gyms WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
             if c.fetchone()==None:
                 '''insertGym = "INSERT INTO Gyms VALUES('%s', '%s'" % (gymId, gymName)
                 insertGym = insertGym + ("%s", (user_id,))
                 insertGym = insertGym + ", %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'" % (gymLat, gymLng, gymAddress, gymType, gymPrice, hoursDict.get("Monday", ""), hoursDict.get("Tuesday", ""), hoursDict.get("Wednesday", ""), hoursDict.get("Thursday", ""), hoursDict.get("Friday", ""), hoursDict.get("Saturday", ""), hoursDict.get("Sunday", ""), requirements, misc, timeNow)'''
-                ####TODO FIX HEXING OF USER_ID WHEN INSERTING, BC IT'S INSERTING AS 0X;FOIWJ;FW INSTEAD OF /X/SFWJF/W done?
-                insertGym = "INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
-                for equipment in globalEquipmentList:
-                    insertGym = insertGym + ", 0"
-                for gymClass in globalClassesList:
-                    insertGym = insertGym + ", ''"
-                insertGym = insertGym + ")"
-                print insertGym
-                print len(insertGym.split(","))
-                c.execute("SELECT * FROM Gyms LIMIT 1")
-                result = c.fetchone()
+                #insertGym = "INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+                #for equipment in globalEquipmentList:
+                #    insertGym = insertGym + ", 0"
+                #for gymClass in globalClassesList:
+                #    insertGym = insertGym + ", ''"
+                #insertGym = insertGym + ")"
+                #print insertGym
+                #print len(insertGym.split(","))
+                #c.execute("SELECT * FROM Gyms LIMIT 1")
+                #result = c.fetchone()
                 print user_id
-                c.execute(insertGym, (gymId, gymName, user_id, gymLat, gymLng, gymAddress, gymType, gymPrice, hoursDict.get("Monday", ""), hoursDict.get("Tuesday", ""), hoursDict.get("Wednesday", ""), hoursDict.get("Thursday", ""), hoursDict.get("Friday", ""), hoursDict.get("Saturday", ""), hoursDict.get("Sunday", ""), requirements, misc, timeNow))
+                #c.execute(insertGym, (gymId, gymName, user_id, gymLat, gymLng, gymAddress, gymType, gymPrice, hoursDict.get("Monday", ""), hoursDict.get("Tuesday", ""), hoursDict.get("Wednesday", ""), hoursDict.get("Thursday", ""), hoursDict.get("Friday", ""), hoursDict.get("Saturday", ""), hoursDict.get("Sunday", ""), requirements, misc, timeNow))
                 #con.commit()
-                c.execute("SELECT * FROM Gyms WHERE UserId=%s", (user_id,))
-                print "success?"
-                for x in c.fetchall():
-                    print x
-                os.makedirs(os.path.join(app.config["UPLOAD_FOLDER"], gymId))
+                #c.execute("SELECT * FROM Gyms WHERE UserId=%s", (user_id,))
+                #print "success?"
+                #for x in c.fetchall():
+                #    print x
+                c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)", (gym_id, gym_name, user_id, gym_lat, gym_lng, gym_address, gym_type, misc, timeNow))
+                gym_dir = os.path.join(app.config["UPLOAD_FOLDER"], gym_id)
+                if not os.path.exists(gym_dir):
+                    os.makedirs(gym_dir)
                 flash("Gym added!")
                 return redirect(url_for(next_redirect))
             return "Gym Already in your Gyms"
@@ -1150,14 +1383,18 @@ def update_info():
         infotype = request.form['type']
         gym_id = request.form['gymId']
         print infotype
-        if infotype != "Equipment" and infotype != "Hours" and infotype != "Requirements" and infotype != "Misc":
+        if infotype != "Equipment" and infotype != "Hours" and infotype != "Misc" and infotype != "Price":
             return "bruh stop screwing with the system"
         if infotype == "Equipment":
             equipment = json.loads(request.form['text'])
+            c.execute("DELETE FROM GymEquipment")
             if manager_logged_in:
+                print equipment
                 for lift in equipment:
                     print 'lift: ' + lift
-                    c.execute("UPDATE Gyms SET " + lift + "=%s WHERE GymId=%s", (equipment[lift], gym_id))
+                    print equipment[lift]
+                    c.execute("INSERT INTO GymEquipment VALUES(%s, %s, %s)", (gym_id, lift, equipment[lift]))
+                    #c.execute("UPDATE Gyms SET " + lift + "=%s WHERE GymId=%s", (equipment[lift], gym_id))
             elif goer_logged_in:
                 c.execute("SELECT * FROM UserGymUpdates WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
                 if c.fetchone() == None:
@@ -1200,26 +1437,22 @@ def update_info():
             elif goer_logged_in:
                 return "Thank you for your input!"
         #TODO LET USER UPDATE HOURS
-        if infotype == "Hours":
+        elif infotype == "Hours":
             hours = json.loads(request.form['text'])
             hoursIndex = 1
             fromVar = hours['from1']
             toVar = hours['to1']
             dayVar = hours['day1']
             hoursDict = {}
-            MondayHours = []
-            TuesdayHours = []
-            WednesdayHours = []
-            ThursdayHours = []
-            FridayHours = []
-            SaturdayHours = []
-            SundayHours = []
             while fromVar and toVar and dayVar and dayVar != "":
                 print "from: " + fromVar
                 print "to: " + toVar
                 print "on: " + dayVar
-                hoursVar = fromVar + "-" + toVar
-                if dayVar == "Weekends" or dayVar == "Weekdays" or dayVar == "Everyday":
+                #hoursVar = fromVar + "-" + toVar
+                #c.execute("UPDATE GymHours Set Opens=%s, Closes=%s WHERE ")
+                c.execute("DELETE FROM GymHours WHERE GymId=%s", (gym_id,))
+                c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar.replace(":", ""), toVar.replace(":", "")))
+                '''if dayVar == "Weekends" or dayVar == "Weekdays" or dayVar == "Everyday":
                     daysList = []
                     if dayVar == "Weekends":
                         daysList = ["Saturday", "Sunday"]
@@ -1237,7 +1470,7 @@ def update_info():
                     if dayVar in hoursDict:
                         hoursDict[dayVar] = hoursDict[dayVar] + ";" + hoursVar
                     else:
-                        hoursDict[dayVar] = hoursVar
+                        hoursDict[dayVar] = hoursVar'''
                 hoursIndex = hoursIndex + 1
                 fromVar = hours.get("from"+str(hoursIndex), None)
                 toVar = hours.get("to"+str(hoursIndex), None)
@@ -1245,45 +1478,7 @@ def update_info():
                 print fromVar
                 print toVar
                 print dayVar
-                '''if dayVar == "Weekdays":
-                    c.execute("UPDATE Gyms SET Monday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Tuesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Wednesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Thursday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Friday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Weekends":
-                    c.execute("UPDATE Gyms SET Saturday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Sunday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Everyday":
-                    c.execute("UPDATE Gyms SET Monday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Tuesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Wednesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Thursday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Friday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Saturday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                    c.execute("UPDATE Gyms SET Sunday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Monday":
-                    c.execute("UPDATE Gyms SET Monday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Tuesday":
-                    c.execute("UPDATE Gyms SET Tuesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Wednesday":
-                    c.execute("UPDATE Gyms SET Wednesday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Thursday":
-                    c.execute("UPDATE Gyms SET Thursday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Friday":
-                    c.execute("UPDATE Gyms SET Friday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Saturday":
-                    c.execute("UPDATE Gyms SET Saturday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))
-                elif dayVar == "Sunday":
-                    c.execute("UPDATE Gyms SET Sunday=%s WHERE UserId=%s AND GymId=%s", (hoursVar, user_id, gym_id))'''
-                '''for timeIndex in range(len(fromList)):
-                startTime = fromList[timeIndex]
-                endTime = toList[timeIndex]
-                day = dayList[timeIndex]
-                print "s: " + startTime
-                print "t: " + endTime
-                print "day: " + day'''
-            daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            '''daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
             print hoursDict
             for day in daysList:
                 if day not in hoursDict:
@@ -1295,15 +1490,37 @@ def update_info():
                 print hoursDict[day]
                 c.execute("UPDATE GYMS SET " + day + "=%s WHERE UserId=%s AND GymId=%s", (hoursDict[day], user_id, gym_id))
             c.execute("SELECT * FROM Gyms")
-            print c.fetchall()
+            print c.fetchall()'''
             con.commit()
             update_time(gym_id)
             return "Update Successful!"
-        info = request.form['text']
-        c.execute("UPDATE Gyms SET " + infotype + "=%s WHERE User=%s AND GymId=%s", (info.replace('\\"', '&#34;'), user, gym_id))
-        con.commit()
-        update_time(gym_id)
-        return "Update successful!"
+        elif infotype == "Price":
+            if manager_logged_in:
+                #c.execute("INSERT INTO User")
+                print 'hello'
+            elif goer_logged_in:
+                user_price = json.loads(request.form['text'])
+                pricesIndex = 1
+                gymPriceValue = request.form['priceValue1']
+                gymPriceUnit = request.form['priceUnit1']
+                while gymPriceValue and gymPriceUnit:
+                    del formDict['priceValue'+str(pricesIndex)]
+                    del formDict['priceUnit'+str(pricesIndex)]
+                    if gymPriceValue != "":
+                        
+                        c.execute("INSERT INTO UserGymUpdates VALUES (" + user_id + "%s, 'Price', %s)", (gym_id, gymPriceValue, gymPriceUnit))
+                        print "price value: " + str(gymPriceValue)
+                        print "price unit: " + str(gymPriceUnit)
+                        pricesIndex = pricesIndex + 1
+                        gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
+                        gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
+            return 'hi'
+        else:
+            info = request.form['text']
+            c.execute("UPDATE Gyms SET Misc=%s WHERE UserId=%s AND GymId=%s", (info.replace('\\"', '&#34;'), user_id, gym_id))
+            con.commit()
+            update_time(gym_id)
+            return "Update successful!"
 
 def update_time(gym_id):
     con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')

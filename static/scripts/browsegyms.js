@@ -93,7 +93,8 @@ if (!navigator.geolocation) {
 } else {
     map.locate();
 }
-
+markers = [];
+availableMarkers = [];
 // Once we've got a position, zoom and center the map
 // on it, and add a single marker.
 map.on('locationfound', function(e) {
@@ -168,7 +169,90 @@ var markPlaces = function() {
     else {
 	markDatabasePlaces();
     }
- };
+};
+var resetColors = function() {
+    for (var i=0; i<availableMarkers.length; i++) {
+	availableMarkers[i].setIcon(L.mapbox.marker.icon({
+		    'marker-color': '#BE9A6B',
+		    'marker-symbol': '',
+		    'marker-size': 'large'
+		})
+	    )
+    }
+}
+map.on("click", resetColors);
+var API_ENDPOINT_NEW = 'https://api.foursquare.com/v2/venues/search' +
+  '?client_id=CLIENT_ID' +
+  '&client_secret=CLIENT_SECRET' +
+  '&v=20130815' +
+  '&ll=LATLON' +
+  '&query=CLIENT_QUERY' +
+  '&callback=?';
+var searchGyms = function() {
+    var query = document.getElementById("search").value;
+    //clearMarkers();
+    $.getJSON(API_ENDPOINT_NEW
+	      .replace('CLIENT_ID', CLIENT_ID)
+	      .replace('CLIENT_SECRET', CLIENT_SECRET)
+	      .replace('LATLON', myLocation)
+	      .replace('CLIENT_QUERY', query), function(result, status) {
+		  if (status !== 'success') return alert('Request to Foursquare failed');
+		  for (var i = 0; i < result.response.venues.length; i++) {
+		      var venue = result.response.venues[i];
+		      var latlng = L.latLng(venue.location.lat, venue.location.lng);
+		      var markerColor;
+		      var venueName;
+		      var inputValues;
+		      if (gyms.indexOf(venue.id) > -1) {
+			  markerColor = "#ff8888";
+			  venueName = venue.name + " (already registered)";
+			  inputValues = "";
+		      }
+		      else {
+			  markerColor = "#BE9A6B";
+			  venueName = venue.name;
+			  inputValues = '<input type="hidden" name="gymId" value="' + venue.id + '">' +
+			      '<input type="hidden" name="gymName" value="' + venue.name + '">' +
+			      '<input type="hidden" name="gymLat" value="' + venue.location.lat + '">' +
+			      '<input type="hidden" name="gymLng" value="' + venue.location.lng + '">' +
+			      '<input type="hidden" name="gymAddress" value="' + venue.location.address + '">';
+		      }
+		      var marker = L.marker(latlng, {
+			      icon: L.mapbox.marker.icon({
+				      'marker-color': markerColor,
+				      'marker-symbol': '',
+				      'marker-size': 'large'
+				  })
+			  })
+			  .bindPopup('<strong><a href="https://foursquare.com/v/' + venue.id + '">' +
+				     venueName + '</a></strong>' + inputValues)
+			  .addTo(foursquarePlaces);
+		      markers.push(marker);
+		      if (gyms.indexOf(venue.id) < 0) {
+			  console.log("not taken");
+			  marker.on("click", function() {
+				      console.log("hi");
+				      bsvar = this;
+				      resetColors();
+				      this.setIcon(L.mapbox.marker.icon({
+						  'marker-color': '#BE9A6B',
+						      'marker-size': 'large',
+						      'marker-symbol': 'star'
+						      })
+					  );
+				  });
+			  availableMarkers.push(marker);
+		      }
+		  }
+	      })
+};
+var clearMarkers = function() {
+    console.log(markers);
+    for (var i=0; i<markers.length; i++) {
+	map.removeLayer(markers[i]);
+    }
+    markers = [];
+};
 var markDatabasePlaces = function() {
    //mark locations in database
     for (var i=0; i<gyms.length; i++) {
@@ -197,9 +281,10 @@ var markDatabasePlaces = function() {
 			'marker-size': 'large'
 		    })
 	    })
-	    //.bindPopup('<strong><a href="https://foursquare.com/v/' + gym['id'] + '">' +
-	    .bindPopup('<strong><a href="/gym/' + gym['id'] + '">' +
-		       gym['name'] + ' (verified gym)</a></strong>')
+	//TODO INCLUDE GYMS NOT VERIFIED BUT WITH USER REVIEWS
+	//.bindPopup('<strong><a href="https://foursquare.com/v/' + gym['id'] + '">' +
+	.bindPopup('<strong><a href="/gym/' + gym['id'] + '">' +
+		   gym['name'] + ' (verified gym)</a></strong>')
 	.addTo(databasePlaces);
     }
 }

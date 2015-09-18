@@ -10,22 +10,34 @@ var endisable = function(name) {
 };
 var updateInfo = function(id, sendGym) {
     if (id==="Equipment") {
-	var $equipmentinfo = $("#equipment input[type='text']");
+	var $equipmentinfo = $(".equipment");
+	//console.log($equipmentinfo);
+	
 	var updateValue = {};
+	console.log($equipmentinfo);
 	//for (var i=0; i<$updateValue.length; i++) {
 	$equipmentinfo.each(function() {
-		console.log(this);
-		updateValue[this.name] = $(this).val();
+		console.log("this: " + this);
+		updateValue[this.children[1].value] = this.children[3].value;
 	    });
     }
     else if (id==="Hours") {
 	var $hoursinfo = $("#hours input, #hours select");
-	var updateValue = {}
+	var updateValue = {};
+	console.log($hoursinfo);
 	$hoursinfo.each(function() {
 		updateValue[this.name] = $(this).val();
 	    });
-	console.log("updateValue dict:");
+	    console.log("updateValue dict:");
 	console.log(updateValue);
+    }
+    else if (id==="Price") {
+	var $prices = $("#prices input, #prices select");
+	console.log($prices);
+	var updateValue = {};
+	$prices.each(function() {
+		updateValue[this.name] = $(this).val();
+	    });
     }
     else {
 	var updateValue = document.getElementById(id).value;
@@ -86,11 +98,36 @@ var addImage = function() {
     node.name = "pic" + imgLength;
     node.accept = "image/*";
     document.getElementById("inputImgs").appendChild(node);
-}
+};
+var addPrice = function() {
+    var priceLength = document.getElementsByClassName("price").length + 1;
+    var node = document.createElement("div");
+    node.innerHTML = '<div class="input-group price" id="price' + priceLength + '">' +
+    '<div class="input-group-addon">$</div><input class="form-control" name="priceValue' + priceLength + '" type="number">' +
+    '<div class="input-group-addon">per</div>' +
+    '<select class="form-control" name="priceUnit' + priceLength + '">' +
+    '<option>month</option>' +
+    '<option>year</option>' +
+    '<option>class</option>' +
+    '</select>' +
+    '<div onclick="removeRow(this.parentElement.id, &#34;price&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div></div>';
+    document.getElementById("prices").appendChild(node);
+};
+var addEquipment = function() {
+    var equipmentLength = document.getElementsByClassName("equipment").length + 1;
+    var node = document.createElement("div");
+    node.innerHTML = '<div class="input-group equipment" id="equipment' + equipmentLength + '">' +
+    '<div class="input-group-addon">Equipment</div>' +
+    '<input class="form-control" name="equipmentName' + equipmentLength + '">' +
+    '<div class="input-group-addon">Amount</div>' +
+    '<input class="form-control" type="number" name="equipmentAmount' + equipmentLength + '">' +
+    '<div onclick="removeRow(this.parentElement.id, &#34;equipment&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>';
+    document.getElementById("equipment").appendChild(node);
+};
 var addTime = function() {
     var timeLength = document.getElementsByClassName("time").length + 1;
     var node = document.createElement("div");
-    node.innerHTML = '<div class="input-group time" id=time' + timeLength + '>' +
+    node.innerHTML = '<div class="input-group time" id="time' + timeLength + '">' +
     '<div class="input-group-addon">From </div>' +
     '<input type="time" name="from' + timeLength + '" class="form-control">' +
     '<div class="input-group-addon"> to </div>' +
@@ -108,7 +145,7 @@ var addTime = function() {
     '<option>Saturday</option>' +
     '<option>Sunday</option>' +
     '</select>' +
-    '<div onclick="removeTime(this.parentElement.id)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>' +
+    '<div onclick="removeRow(this.parentElement.id, &#34;time&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>' +
     '</div>';
     document.getElementById("time").appendChild(node);
 };
@@ -127,20 +164,40 @@ var removeImage = function(id) {
 	    }
 	})
 };
-var removeTime = function(id) {
+var removeExpand = function(id) {
+    document.getElementById(id).remove();
+};
+var removeRow = function(id, className) {
     console.log(id);
+    console.log(className);
     $("#" + id).remove();
-    for (var i=0; i<document.getElementsByClassName("time").length; i++) {
-	document.getElementsByClassName("time")[i].children[1].name = "from" + (i+1);
-	document.getElementsByClassName("time")[i].children[3].name = "to" + (i+1);
-	document.getElementsByClassName("time")[i].children[5].name = "day" + (i+1);
-	document.getElementsByClassName("time")[i].id = "time" + (i+1);
+    if (className.substring(0, 4)==="time") {
+	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
+	    document.getElementsByClassName(className)[i].children[1].name = "from" + (i+1);
+	    document.getElementsByClassName(className)[i].children[3].name = "to" + (i+1);
+	    document.getElementsByClassName(className)[i].children[5].name = "day" + (i+1);
+	    document.getElementsByClassName(className)[i].id = className + (i+1);
+	}
+    }
+    else if (className==="price") {
+	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
+	    document.getElementsByClassName(className)[i].children[1].id = "priceValue" + (i+1);
+	    document.getElementsByClassName(className)[i].id = className + (i+1);
+	}
+    }
+    else if (className==="equipment") {
+	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
+	    document.getElementsByClassName(className)[i].children[1].id = "equipmentName" + (i+1);
+	    document.getElementsByClassName(className)[i].children[1].id = "equipmentAmount" + (i+1);
+	    document.getElementsByClassName(className)[i].id = className + (i+1);
+	}
     }
 };
 var expand = function(days, doc) {
     console.log(doc);
     $(doc).remove();
-    newInnerHTML = "";
+    newNode = document.createElement('div');
+    //newNode.className="input-group time"
     if (days=="Weekends") {
 	daysList = ["Saturday", "Sunday"];
     }
@@ -151,9 +208,11 @@ var expand = function(days, doc) {
 	daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     }
     for (var i=0; i<daysList.length; i++) {
- 	newInnerHTML = newInnerHTML + '<div class="input-group time">' + document.getElementById("expand"+days).innerHTML.replace(days, daysList[i]) + "</div>";
+	//subNode = document.createElement
+ 	newNode.innerHTML += '<div class="input-group time">' + document.getElementById("expand"+days).innerHTML.replace(days, daysList[i]) + "</div>";
     }
-    document.getElementById("time").innerHTML = newInnerHTML;
+    //document.getElementById("expand"+days).innerHTML = newInnerHTML;
+    document.getElementById("time").replaceChild(newNode, document.getElementById("expand"+days));
     for (var i=0; i<daysList.length; i++) {
 	$("."+daysList[i]).val(daysList[i]);
     }

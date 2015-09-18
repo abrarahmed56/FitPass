@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block headcontent %}
 {{super()|replace("static/", "../static/")}}
+<title>{{name}}</title>
 {% endblock headcontent %}
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -26,8 +27,43 @@
 </div>
 {% endblock navcontent %}
 {% block bodycontent %}
-<br>
+<h1>{{name}}</h1>
 There is no information available yet for this gym, but our users have put up some</br>
 <a href="/editgym/{{id}}">Click here if you wish to contribute</a><br>
-{{formattedInfo|safe}}
+{% if prices %}
+<h3>Prices:</h3>
+{% for user in prices %}
+<h4>{{user}}</h4>
+{% for price in prices[user] %}
+{{price}}<br>
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% if equipment %}
+<h3>Equipment:</h3>
+{% for user in equipment %}
+<h4>{{user}}</h4>
+{% for piece in equipment[user] %}
+{{piece}}<br>
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% if hours %}
+<h3>Hours:</h3>
+{% for user in hours %}
+<h4>{{user}}</h4>
+{% for hour in hours[user] %}
+{{hour}}<br>
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% if comments %}
+<h3>Comments:</h3>
+{% for user in comments %}
+<h4>{{user}}</h4>
+{% for comment in comments[user] %}
+{{comment}}<br>
+{% endfor %}
+{% endfor %}
+{% endif %}
 {% endblock bodycontent %}

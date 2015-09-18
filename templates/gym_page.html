@@ -3,6 +3,7 @@
 {{ super()|replace("static/", "../static/") }}
 <title>{{name}}</title>
 <script src="../static/scripts/gym_page.js"></script>
+<script src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 {% endblock headcontent %}
 {% block navcontent %}
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -42,23 +43,69 @@
     {% if goerLoggedIn or adminLoggedIn %}
     <a href="/editgym/{{gymId}}">Please click here if this information is incorrect</a>
     {% endif %}
-    {% if userUpdates %}
-    <br><a onclick="$('#userGymUpdatesContainer').toggle();">Click here to see descrepencies users found with the data</a>
+    <!--{% if userUpdates %}
+    <br><a style="cursor:pointer;" onclick="$('#userGymUpdatesContainer').toggle();">Click here to see descrepencies users found with the data</a>
     {{userUpdates|safe}}
-    {% endif %}
+    {% endif %}-->
     {% for image in gymImgs %}
     <img src="../static/{{gymId}}/{{image}}">
     {% endfor %}
     <br>
-    Price: {{price}}<br>
-    Requirements: {{requirements}}<br>
-    Miscellaneous: {{misc}}<br>
-    <u>Hours:</u> {{hours|safe}}<br>
-    <u>Equipment:</u><br>
-    {% for i in range(equipmentNames|length) %}
-    {{gym[i+equipmentStartCol]}} {{equipmentNames[i]}}<br>
+    <strong>Prices</strong>:<br>
+    {% for gymPrice in gymPrices %}
+    {{gymPrice[0]}} per {{gymPrice[1]}}<br>
     {% endfor %}
+    {% if userPrices %}
+    {% for user in userPrices %}
+    <u>{{user}}</u>:<br>
+    {% for pricing in userPrices[user] %}
+    {{pricing}}<br>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+    <br>
+    <u>Miscellaneous</u>: {{misc}}<br>
+    <br>
+    <u>Hours</u>: <br>
+    {% for hour in hours %}
+    {{hour}}: 
+    {% for h in hours[hour] %}
+    From {{h[0]}} to {{h[1]}}<br>
+    {% endfor %}
+    {% endfor %}
+    {% if userHours %}
+    {% for user in userHours %}
+    <u>{{user}}</u>:<br>
+    {% for hour in userHours[hour] %}
+    {{hour}}
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+    <br>
+    <u>Equipment</u>:<br>
+    {% for i in equipment %}
+    {{equipment[i]}} {{i}}<br>
+    {% endfor %}
+    {% if userEquipment %}
+    {% for user in userEquipment %}
+    <u>{{user}}</u>:<br>
+    {% for equipment in userEquipment[user] %}
+    {{equipment}}<br>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+    <br>
+    {% if userComments %}
+    <strong>Comments</strong>:<br>
+    {% for user in userComments %}
+    <u>{{user}}</u>:
+    {% for comment in userComments %}
+    {{comment}}<br>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
     </div>
   </div>
 </div>
 {% endblock bodycontent %}
+<!--From {hours[hour][h][0]} to {hours[hour][h][1]}<br>-->

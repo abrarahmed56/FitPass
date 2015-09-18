@@ -122,7 +122,7 @@ var searchGyms = function() {
 		      }
 		  }
 	      })
-}
+};
 var clearMarkers = function() {
     console.log(markers);
     for (var i=0; i<markers.length; i++) {

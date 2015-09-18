@@ -30,20 +30,38 @@
       <div id="map" style="width:300px; height:300px;"></div>
       <br>
       <h2>Amenities:</h2>
+      <!--<form class="form-inline">-->
       <!--<form id="equipment">-->
-	{{equipment|safe}}
+      <!--{{equipment|safe}}-->
       <!--</form>-->
-      <form class="form-inline">
-	<div class="form-group">
-	  Price: <div class="input-group">
-	    <div class="input-group-addon">$</div><input class="form-control" id="Price" name="price" type="number" value={{price}}>
+      <!--<div class="input-group-addon">Equipment</div><div class="input-group-addon">Amount</div>-->
+      <div class="form-group">
+	<div id="equipment">
+	  <div class="input-group equipment" id="equipment1">
+	    <div class="input-group-addon">Equipment</div>
+	    <input name="equipmentName1" class="form-control">
+	    <div class="input-group-addon">Amount</div>
+	    <input name="equipmentAmount1" class="form-control" type="number">
+	    <div onclick="removeRow(this.parentElement.id, 'equipment')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
 	  </div>
-	  per 
-	  <select name="priceunit" class="form-control">
-	    <option>month</option>
-	    <option>year</option>
-	    <option>class</option>
-	  </select>
+	</div>
+	<button onclick="addEquipment()" type="button" class="btn btn-default">+Add another piece of equipment</button>
+      </div>
+	<div class="form-group">
+	  Prices:
+	  <div id="prices">
+	    <div class="input-group price" id="price1">
+	      <div class="input-group-addon">$</div><input class="form-control" name="priceValue1" type="number" value={{price}}>
+	      <div class="input-group-addon">per</div>
+	      <select name="priceUnit1" class="form-control">
+		<option>month</option>
+		<option>year</option>
+		<option>class</option>
+	      </select>
+	      <div onclick="removeRow(this.parentElement.id, 'price')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+	    </div>
+	  </div>
+	  <button onclick="addPrice()" type="button" class="btn btn-default">+Add another pricing</button>
 	</div>
       <!--</form>-->
       Type:
@@ -93,6 +111,7 @@
 	    <input type="time" name="to1" class="form-control">
 	    <div class="input-group-addon">on</div>
 	    <select class="form-control" name="day1">
+	      <option>Everyday</option>
 	      <option>Weekdays</option>
 	      <option>Weekends</option>
 	      <option>Monday</option>
@@ -103,11 +122,12 @@
 	      <option>Saturday</option>
 	      <option>Sunday</option>
 	    </select>
-	    <div onclick="removeTime(this.parentElement.id)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+	    <div onclick="removeRow(this.parentElement.id, 'time')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
 	  </div>
 	</div>
 	<button onclick="addTime()" type="button" class="btn btn-default">+Add another time range</button>
 	<br>
+      </div>
       <!--TODO FIGURE OUT WHAT TO DO ABOUT QUOTES-->
       Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
 <br>
@@ -117,12 +137,15 @@ Images/Videos:<br>
 <button class="btn">Upload</button>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="/static/scripts/edit_gym.js"></script>
-	<!--<input name="gymId" id="gymId" type="hidden">-->
-	<button class="btn btn-default" type="submit">Verify Your Gym</button>
+<!--<input name="gymId" id="gymId" type="hidden">-->
+<br>
+<br>
+<button class="btn btn-default btn-lg" type="submit">Verify Your Gym</button>
       </form>
     </div>
   </div>
 </div>
+</form>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script type="text/javascript">
 var takenGyms = {{takenGyms|tojson|safe}};
