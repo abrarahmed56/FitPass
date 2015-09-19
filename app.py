@@ -9,7 +9,6 @@ from hidefromgithub import *
 from werkzeug import secure_filename
 import os
 import datetime
-#import re
 
 UPLOAD_FOLDER = './static/'
 ALLOWED_EXTENSIONS = set(['png', 'bmp', 'jpg'])
@@ -27,10 +26,6 @@ ADDRESSCOL = 5
 TYPECOL = 6
 MISCCOL = 7
 LASTUPDATECOL = 8
-globalEquipmentList = ['barbells', 'basketball court', 'belay device', 'bench press', 'bumper plates', 'chalk', 'crashpads', 'dumbbells', 'elliptical', 'foam roller', 'jump ropes', 'kettlebells', 'locker room', 'medicine balls', 'stairmaster', 'olympic weightlifting platform', 'parking', 'personal trainer', 'physical therapy', 'pool', 'power rack', 'resistance bands', 'rings', 'rock climbing shoes', 'rowers', 'sauna', 'shower', 'squat rack', 'stationary bikes', 'stretching area', 'towels', 'tredmill', 'television', 'wifi', 'yoga mats', 'deadlift space', 'track']
-globalClassesList = ['yoga', 'pilates', 'zumba', 'rock climbing']
-globalEquipmentList.sort()
-globalClassesList.sort()
 
 @app.route('/')
 def index():
@@ -57,19 +52,16 @@ def browsegyms():
     elif 'goer_id' in session:
         goer_logged_in=True
     gyms = []
-    if request.method=="POST":
-        print request.form
-        for x in request.form:
-            print x + ": " + request.form[x]
-        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
-        with con:
-            c = con.cursor()
+    con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
+    with con:
+        c = con.cursor()
+        if request.method=="POST":
+        #User submitted info to be searched for
+            #TODO NEEDS TO BE COMPATIBLE
             c.execute("SELECT * FROM Gyms")
             gymsql = c.fetchall()
             for gymRow in gymsql:
                 formDict = request.form.copy()
-                print "formdict: "
-                print formDict
                 match = 0
                 if "price" in request.form:
                     gymPrice = gymRow[PRICECOL]
@@ -217,10 +209,8 @@ def browsegyms():
                     gyms.append(gym)
                 print match
             showAll = False
-    else:
-        con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
-        with con:
-            c = con.cursor()
+        else:
+            #User didn't search, show general listings
             c.execute("SELECT * FROM Gyms")
             results = c.fetchall()
             for result in results:
@@ -232,7 +222,6 @@ def browsegyms():
                     }
                 gyms.append(gym)
             showAll = True
-    #equipmentList = ['abmat', 'barbells', 'basketball court', 'belay device', 'bench press', 'bumper plates', 'carabeners', 'chalk', 'climbing helmet', 'climbing rope', 'crashpads', 'dumbbells', 'elliptical', 'foam roller', 'harness', 'jump ropes', 'kettlebells', 'locker room', 'medicine balls', 'stairmaster', 'olympic weightlifting platform', 'parking', 'personal trainer', 'physical therapy', 'pool', 'power rack', 'quickdraws', 'resistance bands', 'rings', 'rock climbing shoes', 'rowers', 'sauna', 'shower', 'squat rack', 'stationary bikes', 'stretch area', 'towels', 'tredmill', 'tv', 'wifi', 'yoga mats', 'zumba']
     equipmentList = ['barbells', 'basketball court', 'belay device', 'bench press', 'bumper plates', 'chalk', 'crashpads', 'dumbbells', 'elliptical', 'foam roller', 'jump ropes', 'kettlebells', 'locker room', 'medicine balls', 'stairmaster', 'olympic weightlifting platform', 'parking', 'personal trainer', 'physical therapy', 'pool', 'power rack', 'resistance bands', 'rings', 'rock climbing shoes', 'rowers', 'sauna', 'shower', 'squat rack', 'stationary bikes', 'stretching area', 'towels', 'tredmill', 'television', 'wifi', 'yoga mats', 'zumba', 'deadlift space', 'pilates', 'track']
     weightsList = ['squat rack', 'power rack', 'bench press', 'deadliift space', 'olympic weightlifting platform', 'dumbbells', 'kettlebells', 'barbells']
     enduranceList = ['tredmill', 'stairmaster', 'elliptical', 'kettlebells', 'pool', 'track', 'jump ropes', 'stationary bike']
@@ -391,7 +380,6 @@ def contact():
         goer_logged_in=True
     return render_template("contact.html", adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
 
-#TODO wrapper to redirect to edit_gym if logged in
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'manager_id' in session:
@@ -428,7 +416,6 @@ def administrator_login():
             session['admin_id'] = user_id
             return redirect(url_for("admin_select_gym"))
     else:
-        #return '<form method="POST"><button type="submit">hi</button></form>'
         return render_template("administrator_login.html")
         
 @app.route('/adminselectgym')
@@ -463,9 +450,6 @@ def gym_manager_login():
         c = con.cursor()
         user_email = request.form['email']
         password = request.form['password']
-        print user_email
-        print "password when logging in: " + password
-        print "password when logging in hashed: " + password
         c.execute("SELECT Password FROM GymManagers WHERE Email=%s LIMIT 1", (user_email,))
         result = c.fetchone()
         if result == None:
@@ -476,7 +460,6 @@ def gym_manager_login():
         print result
         if not validate_password(result, password):
             c.execute("SELECT * FROM GymManagers")
-            print c.fetchall()
             flash("Credentials incorrect")
             return redirect(url_for("login"))
         c.execute("SELECT UserId FROM GymManagers WHERE Email=%s LIMIT 1", (user_email,))
@@ -484,8 +467,6 @@ def gym_manager_login():
         c.execute("SELECT GymId FROM Gyms WHERE UserId=%s", (user_id,))
         result = c.fetchone()
         if result != None:
-            print "login session user_id:"
-            print user_id
             session['manager_id'] = user_id
             gym_id = result[0]
             session['gym_id'] = gym_id
@@ -519,8 +500,6 @@ def gym_manager_signup():
             result = c.fetchone()
             if result != None:
                 user_id = result[0]
-                print "signup session user_id:"
-                print user_id
                 session['manager_id'] = user_id
                 flash("Registration successful!")
                 return redirect(url_for("select_gym"))
@@ -537,9 +516,6 @@ def consumer_login():
         c = con.cursor()
         user_email = request.form['email']
         password = request.form['password']
-        print user_email
-        print "password when logging in: " + password
-        print "password when logging in hashed: " + password
         c.execute("SELECT Password FROM GymGoers WHERE Email=%s LIMIT 1", (user_email,))
         result = c.fetchone()
         if result == None:
@@ -547,10 +523,8 @@ def consumer_login():
             return redirect(url_for("login"))
         else:
             result = result[0]
-        print result
         if not validate_password(result, password):
             c.execute("SELECT * FROM GymGoers")
-            print c.fetchall()
             flash("Credentials incorrect")
             return redirect(url_for("login"))
         c.execute("SELECT UserId FROM GymGoers WHERE Email=%s LIMIT 1", (user_email,))
@@ -558,7 +532,6 @@ def consumer_login():
         if result != None:
             user_id = result[0]
             session['goer_id'] = user_id
-            print user_id
             return redirect(url_for("browsegyms"))
         flash("Credentials incorrect")
         return redirect(url_for("login"))
@@ -593,8 +566,6 @@ def consumer_signup():
             result = c.fetchone()
             if result != None:
                 user_id = result[0]
-                print "signup session user_id:"
-                print user_id
                 session['goer_id'] = user_id
                 flash("Registration successful!")
                 return redirect(url_for("browsegyms"))
@@ -617,17 +588,12 @@ def get_gyms():
 
 @app.route('/selectgym', methods=['GET'])
 def select_gym():
-    #TODO multiple price settings
+    #Select your gym after signing up as a manager
     if 'manager_id' in session:
         user = session['manager_id']
         con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
-            #c.execute("SELECT GymId FROM Gyms")
-            #taken_gyms = []
-            #results = c.fetchall()
-            #for result in results:
-            #    taken_gyms.append(result[0])
             taken_gyms = get_gyms()
             equipment = ""
             j = 0
@@ -658,19 +624,19 @@ def edit_gym(gym_id=None):
             user_id = session['manager_id']
             c.execute("SELECT * FROM Gyms WHERE UserId=%s LIMIT 1", (user_id,))
             gym = c.fetchone()
-        elif gym_id != None and 'goer_id' in session:
+        elif gym_id and 'goer_id' in session:
             c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (gym_id,))
             gym = c.fetchone()
         else:
             flash("You have to log in before accessing this page")
             return redirect(url_for('login'))
-        #equipment = ""
-        #equipmentList = globalEquipmentList
-        #equipmentList.sort()
         j = 0
         if gym==None:
             if manager_logged_in:
+                #Manager logged in and hasn't chosen his gym yet
                 return redirect(url_for("select_gym"))
+            #User inputting info for an unverified gym
+            #TODO check if goer_id in session
             misc = ""
             monday = ""
             tuesday = ""
@@ -685,27 +651,15 @@ def edit_gym(gym_id=None):
             price_unit = "month"
             send_gym = True
             equipment = ""
-            '''while j < len(equipmentList):
-                e = equipmentList[j]
-                words = e.split(" ")
-                i = 0
-                while i < len(words):
-                    words[i] = words[i].capitalize()
-                    i = i + 1
-                capE = " ".join(words)
-                undE = "_".join(words)
-                equipment = equipment + str(''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s><input id='%s' name='%s' type="text" value=0 size="2" maxamount="2" disabled>%s</label></div>''%(e, e, e, undE, capE))
-                j = j + 1'''
         else:
+            #Gym exists, send gym info from database to template
             gym_id = gym[IDCOL]
             session['gym_id'] = gym_id
-            #requirements = gym[REQCOL]
             misc = gym[MISCCOL]
             c.execute("SELECT * FROM GymHours WHERE GymId=%s", (gym_id,))
             gym_hours_dict = {}
             gym_hours = c.fetchall()
             for gym_hour in gym_hours:
-                print gym_hour
                 if gym_hour[1] in gym_hours_dict:
                     gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
                 else:
@@ -717,55 +671,20 @@ def edit_gym(gym_id=None):
             friday = ""
             saturday = ""
             sunday = ""
-            '''monday = gym[MONDAYCOL]
-            tuesday = gym[TUESDAYCOL]
-            wednesday = gym[WEDNESDAYCOL]
-            thursday = gym[THURSDAYCOL]
-            friday = gym[FRIDAYCOL]
-            saturday = gym[SATURDAYCOL]
-            sunday = gym[SUNDAYCOL]'''
             c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (gym_id,))
             gym_equipment = c.fetchall()
-            print gym_equipment
-            print gym_id
-            c.execute("SELECT * FROM GymEquipment")
-            print c.fetchall()
             gym_equipment_dict = {}
             for result in gym_equipment:
                 gym_equipment_dict[result[1]] = result[2]
-            print gym_equipment_dict
             equipment = gym_equipment_dict
-            '''while j < len(equipmentList):
-                e = equipmentList[j]
-                words = e.split(" ")
-                i = 0
-                while i < len(words):
-                    words[i] = words[i].capitalize()
-                    i = i + 1
-                capE = " ".join(words)
-                undE = "_".join(words)
-                disabled = ""
-                checked = " checked"
-                if gym[j+EQUIPMENTSTARTCOL] <= 0:
-                    disabled = " disabled"
-                    checked = ""
-                    equipment = equipment + str(''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s %s><input id='%s' name='%s' type="text" value=%s size="2" maxamount="2" %s>%s</label></div>''%(e, e, checked, e, undE, gym[j+EQUIPMENTSTARTCOL], disabled, capE))
-                j = j + 1'''
-            #hours = dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
             hours = gym_hours_dict
-            print "hours: "
-            print hours
             gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
-            #price_num = gym[PRICECOL].split(":")[0]
-            #price_unit = gym[PRICECOL].split(":")[1]
             c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (gym_id,))
             gym_prices = c.fetchall()
             gym_prices_list = []
             for gym_price in gym_prices:
                 gym_prices_list.append([gym_price[1], gym_price[2]])
             send_gym = False
-        print send_gym
-        #equipment=""
         return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym)
 
 def dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday):
@@ -787,7 +706,6 @@ def dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, su
         else:
             hours['Saturday'] = [x.split("-") for x in saturday.split(";")]
             hours['Sunday'] = [x.split("-") for x in sunday.split(";")]
-    #return json.dumps(hours)
     return hours
 
 def allowed_file(filename):
@@ -797,12 +715,9 @@ def allowed_file(filename):
 def uploadImages():
     #TODO ALLOW USERS TO INPUT INFO
     if 'manager_id' in session and 'pic1' in request.files and 'gymId' in request.form:
-        print request.files['pic1']
         file = request.files['pic1']
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            print filename
-            print app.config['UPLOAD_FOLDER']
             gym_dir = os.path.join(app.config["UPLOAD_FOLDER"], request.form['gymId'])
             if not os.path.exists(gym_dir):
                 os.makedirs(gym_dir)
@@ -819,7 +734,6 @@ def removeImages():
     #TODO ALLOW USERS TO INPUT INFO
     if 'manager_id' in session and 'imgName' in request.form and 'gymId' in request.form:
         img_dir = os.path.join(app.config["UPLOAD_FOLDER"], request.form['gymId'], request.form['imgName'])
-        print img_dir
         if os.path.exists(img_dir):
             os.remove(img_dir)
             return "Image removal successful!"
@@ -841,11 +755,11 @@ def gympage(id):
         c = con.cursor()
         c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (id,))
         gym = c.fetchone()
+        #Get user price updates
         user_price_updates_dict = {}
         c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
         info_available = c.fetchall()
         if info_available:
-            #append_to_dict(user_updates_dict, info_available)
             for info in info_available:
                 user_email = get_user_email(info[0])
                 if user_email in user_price_updates_dict:
@@ -858,6 +772,7 @@ def gympage(id):
                         user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3]]
                     else:
                         user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3] + " for " + info[4]]
+        #Get user equipment updates
         user_equipment_updates_dict = {}
         c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
         info_available = c.fetchall()
@@ -868,6 +783,7 @@ def gympage(id):
                     user_equipment_updates_dict[user_email].append(str(info[3]) + " " + info[2])
                 else:
                     user_equipment_updates_dict[user_email] = [str(info[3]) + " " + info[2]]
+        #Get user hours updates
         user_hours_updates_dict = {}
         c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
         info_available = c.fetchall()
@@ -877,8 +793,8 @@ def gympage(id):
                 if user_email in user_hours_updates_dict:
                     user_hours_updates_dict[user_email].append(info[2] + ": From " + info[3] + " to " + info[4])
                 else:
-                    print info
                     user_hours_updates_dict[user_email] = [info[2] + ": From " + info[3] + " to " + info[4]]
+        #Get comments
         user_comments_dict = {}
         c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
         info_available = c.fetchall()
@@ -891,21 +807,6 @@ def gympage(id):
                     user_comments_dict[user_email] = [info[2]]
         if not gym:
             #Gym is not verified by a manager
-            c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
-            info_available = c.fetchall()
-            c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
-            info_available = info_available + c.fetchall()
-            c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
-            info_available = info_available + c.fetchall()
-            c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
-            info_available = info_available + c.fetchall()
-            print info_available
-            print user_equipment_updates_dict
-            print user_price_updates_dict
-            print user_hours_updates_dict
-            print user_comments_dict
-            #return str(info_available)
-            #return 'hi'
             url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR").replace("CLIENT_SECRET", "YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA").replace("GYM_ID", id)
             jsondata = urllib2.urlopen(url)
             gym_name = json.loads(jsondata.read())['response']['venue']['name']
@@ -914,76 +815,8 @@ def gympage(id):
                 return render_template("new_gym.html", id=id, name=gym_name, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
             else:
                 #Unverified gym, user info available
-                '''formatted_info = "<h1>" + gym_name + "</h1>"
-                user_changes_dict = {}
-                for result in info_available:
-                    user_email = get_user_email(result[0])
-                    if result[2] == "Price":
-                        if user_email in user_changes_dict:
-                            user_changes_dict[user_email].append("Price: $" + result[3].replace(":", " per ") + "<br>")
-                        else:
-                            user_changes_dict[user_email] = ["Price: $" + result[3].replace(":", " per ") + "<br>"]
-                    elif result[2].split(":")[0] == "Equipment":
-                        if user_email in user_changes_dict:
-                            user_changes_dict[user_email].append(result[3] + " " + result[2].split(":")[1] + "s<br>")
-                        else:
-                            user_changes_dict[user_email] = [result[3] + " " + result[2].split(":")[1] + "s<br>"]
-                for user_email in user_changes_dict:
-                    formatted_info += user_email + "<br>"
-                    for change in user_changes_dict:
-                        formatted_info += change + "<br>"'''
                 return render_template("new_gym_with_info.html", id=id, name=gym_name, equipment=user_equipment_updates_dict, prices=user_price_updates_dict, hours=user_hours_updates_dict, comments=user_comments_dict, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in)
-            #return str(info_available)'''
         #Gym is verified by manager
-        print gym
-        '''user_price_updates_dict = {}
-        c.execute("SELECT * FROM UserGymPricesUpdates WHERE GymId=%s", (id,))
-        info_available = c.fetchall()
-        if info_available:
-            #append_to_dict(user_updates_dict, info_available)
-            for info in info_available:
-                user_email = get_user_email(info[0])
-                if user_email in user_price_updates_dict:
-                    if info[4] == "":
-                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3])
-                    else:
-                        user_price_updates_dict[user_email].append("$" + info[2] + " per " + info[3] + " for " + info[4])
-                else:
-                    if info[4] == "":
-                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3]]
-                    else:
-                        user_price_updates_dict[user_email] = ["$" + info[2] + " per " + info[3] + " for " + info[4]]
-        user_equipment_updates_dict = {}
-        c.execute("SELECT * FROM UserGymEquipmentUpdates WHERE GymId=%s", (id,))
-        info_available = c.fetchall()
-        if info_available:
-            for info in info_available:
-                user_email = get_user_email(info[0])
-                if user_email in user_equipment_updates_dict:
-                    user_equipment_updates_dict[user_email].append(str(info[3]) + " " + info[2])
-                else:
-                    user_equipment_updates_dict[user_email] = [str(info[3]) + " " + info[2]]
-        user_hours_updates_dict = {}
-        c.execute("SELECT * FROM UserGymHoursUpdates WHERE GymId=%s", (id,))
-        info_available = c.fetchall()
-        if info_available:
-            for info in info_available:
-                user_email = get_user_email(info[0])
-                if user_email in user_hours_updates_dict:
-                    user_hours_updates_dict[user_email].append(info[2] + ": From " + info[3] + " to " + info[4])
-                else:
-                    print info
-                    user_hours_updates_dict[user_email] = [info[2] + ": From " + info[3] + " to " + info[4]]
-        user_comments_dict = {}
-        c.execute("SELECT * FROM UserGymComments WHERE GymId=%s", (id,))
-        info_available = c.fetchall()
-        if info_available:
-            for info in info_available:
-                user_email = get_user_email(info[0])
-                if user_email in user_comments_dict:
-                    user_comments_dict[user_email].append(info[2])
-                else:
-                    user_comments_dict[user_email] = [info[2]]'''
         name = gym[NAMECOL]
         prices = []
         c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (id,))
@@ -1009,147 +842,6 @@ def gympage(id):
         equipment = gym_equipment_dict
         gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
         return render_template("gym_page.html", name=name, gymPrices=gym_prices_list, misc=misc, hours=hours, gym=gym, addressCol=ADDRESSCOL, lastUpdateCol=LASTUPDATECOL, gymImgs=gym_imgs, gymId=gym[IDCOL], adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, userPrices=user_price_updates_dict, userEquipment=user_equipment_updates_dict, userHours=user_hours_updates_dict, userComments=user_comments_dict, equipment=equipment)
-        """results = c.fetchall()
-        user_updates = False
-        if results:
-            #TODO MATCH PRICE, REQUIREMENTS, AND MISC
-            user_updates = '''
-<style>
-th, td {
-white-space: nowrap;
-}
-#userGymUpdates {
-overflow: auto;
-}
-</style>
-<div id="userGymUpdatesContainer" style="width:100%">
-<table id="userGymUpdates" class="display nowrap table table-bordered" style="width:100%">
-'''
-            table_head = "<thead><tr>"
-            table_body = "<tbody><tr>"
-            confirm_changes_row = "<tr>"
-            user_changes_dict = {}
-            for result in results:
-                #user_updates = user_updates + "<td>"
-                print result
-                print "result"
-                print result[0]
-                user_email = get_user_email(result[0])
-                '''table_head = table_head + "<th>" + user_email + "</th>"
-                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=1", (result[IDCOL], result[USERCOL]))
-                upvotes = len(c.fetchall())
-                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=-1",(result[IDCOL], result[USERCOL]))
-                downvotes = len(c.fetchall())
-                confirm_changes_row = confirm_changes_row + "<td>Upvotes: <div id='" + user_email + "upvotes'>" + str(upvotes) + "</div><br>Downvotes: <div id='" + user_email + "downvotes'>" + str(downvotes) + "</div><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, 1)' class='btn'>Confirm Changes</button><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, -1)' class='btn'>Downvote Changes</button></td>"
-                table_body = table_body + "<td>"
-                #RESUME HERE HERE HERE HERE'''
-                if result[2] == "Price":
-                    if user_email in user_changes_dict:
-                        user_changes_dict[user_email].append("Price: $" + result[3].replace(":", " per ") + "<br>")
-                    else:
-                        user_changes_dict[user_email] = ["Price: $" + result[3].replace(":", " per ") + "<br>"]
-                    #table_body = table_body + "Price: $" + result[3].replace(":", " per ") + "<br>"
-                elif result[2].split(":")[0] == "Equipment":
-                    if user_email in user_changes_dict:
-                        user_changes_dict[user_email].append(result[3] + " " + result[2].split(":")[1] + "s<br>")
-                    else:
-                        user_changes_dict[user_email] = [result[3] + " " + result[2].split(":")[1] + "s<br>"]
-                    #table_body = table_body + result[3] + " " + result[2].split(":")[1] + "s<br>"
-                '''for x in range(MONDAYCOL, SUNDAYCOL):
-                    print "user input, then gym:"
-                    print result[x]
-                    print gym[x]
-                    if result[x] != gym[x]:
-                        for day in hoursColDict:
-                            if hoursColDict[day] == x:
-                                table_body = table_body + day + ": " + result[x]
-                                #user_updates = user_updates + day + ": " + result[x]
-                for x in range(EQUIPMENTSTARTCOL, EQUIPMENTSTARTCOL + len(globalEquipmentList)):
-                    if result[x] != gym[x]:
-                        table_body = table_body + "<br>" + globalEquipmentList[x-EQUIPMENTSTARTCOL] + ": " + str(result[x])
-                        #user_updates = user_updates + "<td>" +  globalEquipmentList[x-EQUIPMENTSTARTCOL] + ": " + str(result[x]) + "</td>"
-                '''
-                #table_body = table_body + "</td>"
-            for user_email in user_changes_dict:
-                table_head = table_head + "<th>" + user_email + "</th>"
-                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=1", (result[IDCOL], result[USERCOL]))
-                upvotes = len(c.fetchall())
-                c.execute("SELECT * FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND Vote=-1",(result[IDCOL], result[USERCOL]))
-                downvotes = len(c.fetchall())
-                confirm_changes_row = confirm_changes_row + "<td>Upvotes: <div id='" + user_email + "upvotes'>" + str(upvotes) + "</div><br>Downvotes: <div id='" + user_email + "downvotes'>" + str(downvotes) + "</div><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, 1)' class='btn'>Confirm Changes</button><br><button type='button' onclick='voteUserChange(&#34;" + id + "&#34;, &#34;" + user_email + "&#34;, -1)' class='btn'>Downvote Changes</button></td>"
-                table_body = table_body + "<td>"
-                for change in user_changes_dict[user_email]:
-                    table_body = table_body + change + "<br>"
-            table_head = table_head + "</tr></thead>"
-            table_body = table_body + "</tr>" + confirm_changes_row + "</tr></tbody>"
-            print table_body
-            #user_updates = user_updates + "</td>"
-            user_updates = user_updates + table_head + table_body + ""
-</table>
-<script>
-$('#userGymUpdates').DataTable({
-"scrollX": true
-})
-</script>
-<script>
-$('#userGymUpdatesContainer').hide();
-</script>
-</div>""
-            #user_updates = results
-            print "user updated"
-        else:
-            print "user no update"
-        name = gym[NAMECOL]
-        prices = []
-        c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (id,))
-        gym_prices = c.fetchall()
-        gym_prices_list = []
-        for gym_price in gym_prices:
-            gym_prices_list.append([gym_price[1], gym_price[2]])
-        #price = gym[PRICECOL].replace(":", " per ")
-        #requirements = gym[REQCOL]
-        misc = gym[MISCCOL]
-        #hours = gym[HOURSCOL]
-        '''hours="<br>Monday: " + gym[MONDAYCOL] + \
-        "<br>Tuesday: " + gym[TUESDAYCOL] + \
-        "<br>Wednesday: " + gym[WEDNESDAYCOL] + \
-        "<br>Thursday: " + gym[THURSDAYCOL] + \
-        "<br>Friday: " + gym[FRIDAYCOL] + \
-        "<br>Saturday: " + gym[SATURDAYCOL] + \
-        "<br>Sunday: <br>" + gym[SUNDAYCOL]
-        hours = hours.replace(": <br>", ": Closed<br>")'''
-        c.execute("SELECT * FROM GymHours WHERE GymId=%s", (id,))
-        gym_hours = c.fetchall()
-        gym_hours_dict = {}
-        for gym_hour in gym_hours:
-            if gym_hour[1] in gym_hours_dict:
-                gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
-            else:
-                gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
-        hours = gym_hours_dict
-        #c.execute("SHOW COLUMNS FROM Gyms")
-        #print c.fetchall()
-        c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (id,))
-        gym_equipment = c.fetchall()
-        gym_equipment_dict = {}
-        for result in gym_equipment:
-            gym_equipment_dict[result[1]] = result[2]
-        equipment = gym_equipment_dict
-        '''equipmentNames = []
-        for b in c.fetchall()[EQUIPMENTSTARTCOL:]:
-            equipmentNames.append(b[0].replace("_", " "))'''
-        gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
-        print gym_prices_list
-    return render_template("gym_page.html", name=name, gymPrices=gym_prices_list, misc=misc, hours=hours, gym=gym, addressCol=ADDRESSCOL, lastUpdateCol=LASTUPDATECOL, gymImgs=gym_imgs, gymId=gym[IDCOL], adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, userUpdates=user_updates, equipment=equipment)
-"""
-'''def append_to_dict(user_updates_dict, info_available):
-    for info in info_available:
-        user_email = get_user_email(info[0])
-        if user_email in user_changes_dict:
-            user_changes_dict[user_email].append()
-        else:
-            user_changes_dict[user_email] = []
-'''     
 
 def get_user_email(user_id):
     con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
@@ -1177,14 +869,6 @@ def get_user_id(user_email):
 
 @app.route('/logout')
 def logout():
-    '''if 'manager_id' in session:
-        session.pop('manager_id')
-    if 'gym_id' in session:
-        session.pop('gym_id')
-    if 'goer_id' in session:
-        session.pop('goer_id')
-    if 'admin_id' in session:
-        session.pop('admin_id')'''
     session.clear()
     flash("You have successfully logged out")
     return redirect(url_for('index'))
@@ -1192,7 +876,6 @@ def logout():
 @app.route('/addgym', methods=['POST'])
 def add_gym():
     if request.method=='POST' and ('manager_id' in session or 'admin_id' in session):
-        print request.form
         formDict = request.form.copy()
         #check if price, hours, type are set, and if gym chosen
         #create gym with everything set except equipment
@@ -1219,7 +902,6 @@ def add_gym():
                 if 'gymType' not in request.form or request.form['price'] == '' or request.form['to1'] == '' or request.form['from1'] == '':
                     flash("Please fill out the required fields")
                     return redirect(url_for("admin_select_gym"))
-            print request.form
             gym_id = request.form['gymId']
             gym_name = request.form['gymName']
             gym_lat = request.form['gymLat']
@@ -1237,8 +919,6 @@ def add_gym():
             #toList = []
             #dayList = []
             #gymPrice = request.form['priceValue1'] + ":" + request.form['priceUnit1']
-            print 'hi'
-            print formDict
             pricesIndex = 1
             gymPriceValue = request.form['priceValue1']
             gymPriceUnit = request.form['priceUnit1']
@@ -1246,10 +926,7 @@ def add_gym():
                 del formDict['priceValue'+str(pricesIndex)]
                 del formDict['priceUnit'+str(pricesIndex)]
                 if gymPriceValue != "":
-                    #gymPrice = gymPriceValue + ":" + gymPriceUnit
                     c.execute("INSERT INTO GymPrices VALUES (%s, %s, %s)", (gym_id, gymPriceValue, gymPriceUnit))
-                    print "price value: " + str(gymPriceValue)
-                    print "price unit: " + str(gymPriceUnit)
                     pricesIndex = pricesIndex + 1
                     gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
                     gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
@@ -1268,49 +945,15 @@ def add_gym():
                     #ACTUALLY, IT'LL SAVE MEMORY TO STORE WITHOUT IT
                     #IDK
                     c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar.replace(":", ""), toVar.replace(":", "")))
-                    '''hoursVar = fromVar + "-" + toVar
-                    daysList = []
-                    if dayVar == "Weekends":
-                        daysList = ["Saturday", "Sunday"]
-                    elif dayVar == "Weekdays":
-                        daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-                    else:
-                        daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-                    for day in daysList:
-                        if day in hoursDict:
-                            hoursDict[day] = hoursDict[day] + ";" + hoursVar
-                        else:
-                            hoursDict[day] = hoursVar'''
                     hoursIndex = hoursIndex + 1
                     fromVar = request.form.get("from"+str(hoursIndex), None)
                     toVar = request.form.get("to"+str(hoursIndex), None)
                     dayVar = request.form.get("day"+str(hoursIndex), None)
-            #requirements = ''#request.form['requirements']
             #misc = request.form['misc']
             misc = ''
             timeNow = datetime.datetime.now().ctime() + " by Gym Manager"
             c.execute("SELECT * FROM Gyms WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
             if c.fetchone()==None:
-                '''insertGym = "INSERT INTO Gyms VALUES('%s', '%s'" % (gymId, gymName)
-                insertGym = insertGym + ("%s", (user_id,))
-                insertGym = insertGym + ", %s, %s, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'" % (gymLat, gymLng, gymAddress, gymType, gymPrice, hoursDict.get("Monday", ""), hoursDict.get("Tuesday", ""), hoursDict.get("Wednesday", ""), hoursDict.get("Thursday", ""), hoursDict.get("Friday", ""), hoursDict.get("Saturday", ""), hoursDict.get("Sunday", ""), requirements, misc, timeNow)'''
-                #insertGym = "INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
-                #for equipment in globalEquipmentList:
-                #    insertGym = insertGym + ", 0"
-                #for gymClass in globalClassesList:
-                #    insertGym = insertGym + ", ''"
-                #insertGym = insertGym + ")"
-                #print insertGym
-                #print len(insertGym.split(","))
-                #c.execute("SELECT * FROM Gyms LIMIT 1")
-                #result = c.fetchone()
-                print user_id
-                #c.execute(insertGym, (gymId, gymName, user_id, gymLat, gymLng, gymAddress, gymType, gymPrice, hoursDict.get("Monday", ""), hoursDict.get("Tuesday", ""), hoursDict.get("Wednesday", ""), hoursDict.get("Thursday", ""), hoursDict.get("Friday", ""), hoursDict.get("Saturday", ""), hoursDict.get("Sunday", ""), requirements, misc, timeNow))
-                #con.commit()
-                #c.execute("SELECT * FROM Gyms WHERE UserId=%s", (user_id,))
-                #print "success?"
-                #for x in c.fetchall():
-                #    print x
                 c.execute("INSERT INTO Gyms VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)", (gym_id, gym_name, user_id, gym_lat, gym_lng, gym_address, gym_type, misc, timeNow))
                 gym_dir = os.path.join(app.config["UPLOAD_FOLDER"], gym_id)
                 if not os.path.exists(gym_dir):
@@ -1323,21 +966,17 @@ def add_gym():
 
 @app.route('/api/getgyminfo', methods=['POST'])
 def get_gym_info():
+    #TODO NEEDS TO BE COMPATIBLE
     if 'gymId' in request.form:
         gym_id = request.form['gymId']
         con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
         with con:
             c = con.cursor()
             c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (gym_id,))
-            print 'executed'
             result = c.fetchone()
-            print result
-            print gym_id
             c.execute("SELECT GymId FROM Gyms")
             results = c.fetchall()
-            print "add gyms:"
             if result != None:
-                print result
                 ans = {'equipment': [i for i in result[EQUIPMENTSTARTCOL:]],
                        'id': result[IDCOL],
                        'price': result[PRICECOL],
@@ -1373,7 +1012,6 @@ def update_info():
         manager_logged_in = False
         goer_logged_in = False
         if 'manager_id' in session:
-            print 'manager'
             user_id = session['manager_id']
             gym_id = session['gym_id']
             manager_logged_in = True
@@ -1382,28 +1020,24 @@ def update_info():
             goer_logged_in = True
         infotype = request.form['type']
         gym_id = request.form['gymId']
-        print infotype
         if infotype != "Equipment" and infotype != "Hours" and infotype != "Misc" and infotype != "Price":
             return "bruh stop screwing with the system"
         if infotype == "Equipment":
             equipment = json.loads(request.form['text'])
             c.execute("DELETE FROM GymEquipment")
             if manager_logged_in:
-                print equipment
                 for lift in equipment:
                     print 'lift: ' + lift
                     print equipment[lift]
                     c.execute("INSERT INTO GymEquipment VALUES(%s, %s, %s)", (gym_id, lift, equipment[lift]))
-                    #c.execute("UPDATE Gyms SET " + lift + "=%s WHERE GymId=%s", (equipment[lift], gym_id))
             elif goer_logged_in:
+                #TODO NEEDS TO BE COMPATIBLE
                 c.execute("SELECT * FROM UserGymUpdates WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
                 if c.fetchone() == None:
-                    print "user didnt update yet"
+                    #user didnt update yet
                     c.execute("SELECT * FROM Gyms WHERE GymId=%s", (gym_id,))
                     result = c.fetchall()
                     if not result:
-                        print 'not result'
-                        print request.form
                         listresult = [request.form['gymId'], request.form['gymName'], user_id, request.form['lat'], request.form['lng'], request.form['address'], '', '', '', '', '', '', '', '', '', '', '', '']
                         for equipment in globalEquipmentList:
                             listresult.append(0)
@@ -1445,58 +1079,18 @@ def update_info():
             dayVar = hours['day1']
             hoursDict = {}
             while fromVar and toVar and dayVar and dayVar != "":
-                print "from: " + fromVar
-                print "to: " + toVar
-                print "on: " + dayVar
-                #hoursVar = fromVar + "-" + toVar
-                #c.execute("UPDATE GymHours Set Opens=%s, Closes=%s WHERE ")
                 c.execute("DELETE FROM GymHours WHERE GymId=%s", (gym_id,))
                 c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar.replace(":", ""), toVar.replace(":", "")))
-                '''if dayVar == "Weekends" or dayVar == "Weekdays" or dayVar == "Everyday":
-                    daysList = []
-                    if dayVar == "Weekends":
-                        daysList = ["Saturday", "Sunday"]
-                    elif dayVar == "Weekdays":
-                        daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-                    else:
-                        daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-                    for day in daysList:
-                        print "day: " + day
-                        if day in hoursDict:
-                            hoursDict[day] = hoursDict[day] + ";" + hoursVar
-                        else:
-                            hoursDict[day] = hoursVar
-                else:
-                    if dayVar in hoursDict:
-                        hoursDict[dayVar] = hoursDict[dayVar] + ";" + hoursVar
-                    else:
-                        hoursDict[dayVar] = hoursVar'''
                 hoursIndex = hoursIndex + 1
                 fromVar = hours.get("from"+str(hoursIndex), None)
                 toVar = hours.get("to"+str(hoursIndex), None)
                 dayVar = hours.get("day"+str(hoursIndex), None)
-                print fromVar
-                print toVar
-                print dayVar
-            '''daysList = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-            print hoursDict
-            for day in daysList:
-                if day not in hoursDict:
-                    #TODO FINISH THIS
-                    hoursDict[day]=""
-                    #return "Please enter values for every day of the week"
-            for day in hoursDict:
-                print day
-                print hoursDict[day]
-                c.execute("UPDATE GYMS SET " + day + "=%s WHERE UserId=%s AND GymId=%s", (hoursDict[day], user_id, gym_id))
-            c.execute("SELECT * FROM Gyms")
-            print c.fetchall()'''
             con.commit()
             update_time(gym_id)
             return "Update Successful!"
         elif infotype == "Price":
+            #TODO FINISH
             if manager_logged_in:
-                #c.execute("INSERT INTO User")
                 print 'hello'
             elif goer_logged_in:
                 user_price = json.loads(request.form['text'])
@@ -1507,10 +1101,7 @@ def update_info():
                     del formDict['priceValue'+str(pricesIndex)]
                     del formDict['priceUnit'+str(pricesIndex)]
                     if gymPriceValue != "":
-                        
                         c.execute("INSERT INTO UserGymUpdates VALUES (" + user_id + "%s, 'Price', %s)", (gym_id, gymPriceValue, gymPriceUnit))
-                        print "price value: " + str(gymPriceValue)
-                        print "price unit: " + str(gymPriceUnit)
                         pricesIndex = pricesIndex + 1
                         gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
                         gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
@@ -1528,8 +1119,6 @@ def update_time(gym_id):
         c = con.cursor()
         #Change LastUpdate
         newUpdateTime = datetime.datetime.now().ctime()
-        print gym_id
-        print newUpdateTime
         c.execute("UPDATE Gyms SET LastUpdate=%s WHERE GymId=%s", (newUpdateTime, gym_id))
         con.commit()
 
@@ -1544,16 +1133,14 @@ def vote_user_change():
             voter_id = session['goer_id']
             if updater_id == voter_id:
                 return "You can't vote for your own change"
-            print updater_id
-            print voter_id
             c.execute("SELECT Vote FROM UserGymVotes WHERE GymId=%s AND UpdaterId=%s AND VoterId=%s LIMIT 1", (gym_id, updater_id, voter_id))
             result = c.fetchone()
             if result != None:
+                #User voted on change already, update vote
                 if int(result[0]) == int(request.form['vote']) and int(result[0]) == 1:
                     return "You already voted in favor of this change"
                 if int(result[0]) == int(request.form['vote']) and int(result[0]) == -1:
                     return "You already voted against this change"
-                #c.execute("UPDATE UserGymVotes SET Vote=%d WHERE GymId='%s' AND UpdaterId='%s' AND VoterId='%s'" % (int(request.form['vote']), gym_id, updater_id, voter_id))
                 if int(request.form['vote']) == 1:
                     c.execute("UPDATE UserGymVotes SET Vote=1 WHERE GymId=%s AND UpdaterId=%s AND VoterId=%s", (gym_id, updater_id, voter_id))
                 elif int(request.form['vote']) == -1:
@@ -1561,19 +1148,15 @@ def vote_user_change():
                 else:
                     return "Error"
                 return "Your vote has been changed!"
+            #User didn't vote on change yet
             if request.form['vote'] == "1":
-                #c.execute("UPDATE UserGymVotes SET NumPlusVotes=NumPlusVotes+1 WHERE GymId=%s AND UserId=%s", (request.form['gym_id'], updater_id))
                 c.execute("INSERT INTO UserGymVotes VALUES(%s, %s, %s, 1)", (gym_id, updater_id, voter_id))
                 return "Thank you!"
             elif request.form['vote'] == "-1":
-                #c.execute("UPDATE UserGymVotes SET NumMinusVotes=NumMinusVotes+1 WHERE GymId=%s AND UserId=%s", (request.form['gym_id'], updater_id))
                 c.execute("INSERT INTO UserGymVotes VALUES(%s, %s, %s, -1)", (gym_id, updater_id, voter_id))
                 return "Thank you!"
-            #return request.form['vote']
             return "Error"
-        #return "Error"
-        #return request.form['gym_id'] + request.form['user_email']
-        return "There was an error"
+        return "Error"
 
 @app.route('/api/report', methods=['POST'])
 def report():
