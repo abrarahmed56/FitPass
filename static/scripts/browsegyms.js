@@ -306,8 +306,6 @@ var addTime = function() {
     '<input type="time" name="to' + timeLength + '" class="form-control">' +
     '<div class="input-group-addon">on</div>' +
     '<select class="form-control" name="day' + timeLength + '">' +
-    '<option>Weekdays</option>' +
-    '<option>Weekends</option>' +
     '<option>Monday</option>' +
     '<option>Tuesday</option>' +
     '<option>Wednesday</option>' +

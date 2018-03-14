@@ -819,11 +819,16 @@ def edit_gym(gym_id=None):
     with con:
         c = con.cursor()
         manager_logged_in = False
+        equipmentList = ['Barbells', 'Basketball Court', 'Belay Device', 'Bench Press', 'Bumper Plates', 'Chalk', 'Crashpads', 'Dumbbells', 'Elliptical', 'Foam Roller', 'Jump Ropes', 'Kettlebells', 'Locker Room', 'Medicine Balls', 'Stairmaster', 'Olympic Weightlifting Platform', 'Parking', 'Personal Training', 'Physical Therapy', 'Pool', 'Power Rack', 'Resistance Bands', 'Rings', 'Rock Climbing Shoes', 'Rowers', 'Sauna', 'Shower', 'Squat Rack', 'Stationary Bikes', 'Stretching Area', 'Towels', 'Treadmill', 'Television', 'WiFi', 'Yoga Mats', 'Zumba', 'Deadlift Space', 'Pilates', 'Track']
         if 'manager_id' in session:
             manager_logged_in = True
             user_id = session['manager_id']
-            c.execute("SELECT * FROM Gyms WHERE UserId=%s LIMIT 1", (user_id,))
-            gym = c.fetchone()
+            c.execute("SELECT * FROM Gyms WHERE UserId=%s", (user_id,))
+            gyms = c.fetchall()
+            if len(gyms) == 1:
+                gym = gyms[0]
+            else:
+                gym = gyms[0]
         elif gym_id and 'goer_id' in session:
             c.execute("SELECT * FROM Gyms WHERE GymId=%s LIMIT 1", (gym_id,))
             gym = c.fetchone()
@@ -885,7 +890,7 @@ def edit_gym(gym_id=None):
             for gym_price in gym_prices:
                 gym_prices_list.append([gym_price[1], gym_price[2]])
             send_gym = False
-        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym)
+        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym, equipmentList=equipmentList)
 
 def dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday):
     hours = {}

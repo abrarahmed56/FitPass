@@ -119,7 +119,7 @@ var addEquipment = function() {
     var node = document.createElement("div");
     node.innerHTML = '<div class="input-group equipment" id="equipment' + equipmentLength + '">' +
     '<div class="input-group-addon">Equipment</div>' +
-    '<input class="form-control" name="equipmentName' + equipmentLength + '">' +
+    '<input list="equipments" class="form-control" name="equipmentName' + equipmentLength + '">' +
     '<div class="input-group-addon">Amount</div>' +
     '<input class="form-control" type="number" name="equipmentAmount' + equipmentLength + '">' +
     '<div onclick="removeRow(this.parentElement.id, &#34;equipment&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>';

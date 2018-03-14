@@ -39,7 +39,12 @@ sendGym = false;
     {% for key in equipment %}
     <div class="input-group equipment" id="equipment{{index}}">
       <div class="input-group-addon">Equipment</div>
-      <input name="equipmentName{{index}}" class="form-control" value="{{key}}">
+      <input list="equipments" name="equipmentName{{index}}" class="form-control" value="{{key}}">
+      <datalist id="equipments">
+	{% for equipmentType in equipmentList %}
+	<option value="{{equipmentType}}">
+	{% endfor %}
+      </datalist>
       <div class="input-group-addon">Amount</div>
       <input name="equipmentAmount{{index}}" class="form-control" type="number" value="{{equipment[key]}}">
       <div onclick="removeRow(this.parentElement.id, 'equipment')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
