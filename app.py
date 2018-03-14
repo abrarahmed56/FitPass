@@ -9,6 +9,7 @@ from hidefromgithub import *
 from werkzeug import secure_filename
 import os
 import datetime
+import geocoder
 
 UPLOAD_FOLDER = './static/'
 ALLOWED_EXTENSIONS = set(['png', 'bmp', 'jpg'])
@@ -60,6 +61,7 @@ def browsegyms():
         c = con.cursor()
         c.execute("SELECT EquipmentName FROM GymEquipment")
         results = c.fetchall()
+        searched = True
         #equipmentList is all available equipment in gyms
         '''equipmentList = []
         for equipment in results:
@@ -74,6 +76,8 @@ def browsegyms():
                 formDict = request.form.copy()
                 match = 0
                 numCriteria = 0
+                matchingThings = []
+                notMatchingThings = []
                 if "price" in request.form:
                     print "price in request"
                     numCriteria += 1
@@ -82,7 +86,7 @@ def browsegyms():
                     #print "requested price:"
                     #print requested_price
                     #c.execute("SELECT * From GymPrices WHERE GymId=%s AND PriceUnit<=%s", (gymRow[IDCOL], requested_price[:requested_price.find(":")]))
-                    c.execute("SELECT * From GymPrices WHERE GymId=%s", (gymRow[IDCOL],))
+                    c.execute("SELECT * From GymPrices WHERE GymId=%s AND Target='default'", (gymRow[IDCOL],))
                     gym_prices = c.fetchall()
                     #user inputted price
                     if "per" in requested_price:
@@ -104,8 +108,11 @@ def browsegyms():
                                 #print price_difference
                                 if price_difference > 0:
                                     match = match + math.floor(price_difference * .5)
+                                    notMatchingThings.append("$" + str(gym_price[1]) + "/" + gym_price[2])
+                                else:
+                                    matchingThings.append("$" + str(gym_price[1]) + "/" + gym_price[2])
                                 #print "match:"
-                                #print match
+                                #print matchAAAAAAAAAAAAAAAAAA
                             else:
                                 print "requested:"
                                 print requested_price.split(":")[1]
@@ -161,20 +168,25 @@ def browsegyms():
                                 #closes at a good time
                                 if desiredEndTime <= gymEndTime:
                                     match = match - 3
+                                    matchingThings.append("Open from " + gymStartTime + " to " + gymEndTime + " on " + desiredDay)
                                 #closes earlier than wanted
                                 else:
                                     numTimeAvailable = (gymEndTime - desiredStartTime).seconds/3600
                                     match = match + (3 - min(3, numTimeAvailable)) / 2
+                                    notMatchingThings.append("Closed from " + gymEndTime + " to " + desiredEndTime + " on " + desiredDay)
                             #opens later than wanted
                             else:
                                 #closes at a good time
                                 if desiredEndTime <= gymEndTime:
                                     numTimeAvailable = (desiredEndTime - gymStartTime).seconds/3600
                                     match = match + (3 - min(3, numTimeAvailable)) / 2
+                                    notMatchingThings.append("Closed from " + desiredStartTime + " to " + gymStartTime + " on " + desiredDay)
                                 #closes earlier than wanted
                                 else:
                                     numTimeAvailable = (gymEndTime - gymStartTime).seconds/3600
                                     match = match + (3 - min(3, numTimeAvailable)) / 2
+                                    notMatchingThings.append("Closed from " + desiredStartTime + " to " + gymStartTime + " and from " + 
+                                                             gymEndTime + " to " + desiredEndTime +  " on " + desiredDay)
                         if len(results) == 0 :
                             match = match + 2
                 if "gymType" in request.form:
@@ -183,6 +195,7 @@ def browsegyms():
                     #print "actual gymType: " + gymRow[TYPECOL]
                     if request.form['gymType'] != gymRow[TYPECOL]:
                         match = match + 20
+                        notMatchingThings.append(gymRow[TYPECOL] + ", not " + request.form['gymType'])
                     del formDict['gymType']
                 #print formDict
                 #TODO: location, then finally, equipment
@@ -242,6 +255,9 @@ def browsegyms():
                             userDistance = userLoc
                         if distance > float(userDistance):
                             match = match + (distance-float(userDistance))
+                            notMatchingThings.append(distance + " miles away")
+                        else:
+                            matchingThings.append(distance + " miles away")
                         #print "num from current: " + userLoc
                         #print "my address: " + request.form['myLoc']
                         #print "gym address: " + str(gymRow[LATCOL]) + "," + str(gymRow[LNGCOL])
@@ -255,10 +271,15 @@ def browsegyms():
                         print equipment
                         c.execute("SELECT * FROM GymEquipment WHERE GymId=%s AND EquipmentName=%s", (gymRow[IDCOL], equipment))
                         results = c.fetchall()
+                        print results
                         if not results:
                             match = match + 2
+                            appString = "Doesn't have " + equipment
+                            notMatchingThings.append(appString)
                         else:
                             match = match - 1
+                            appString = "Has " + equipment
+                            matchingThings.append(appString)
                         '''words = equipment.split(" ")
                         i = 0
                         while i < len(words):
@@ -273,8 +294,10 @@ def browsegyms():
                         results = c.fetchall()
                         if not results:
                             match = match + 5
+                            notMatchingThings.append("No " + equipment)
                         else:
                             match = match - 3
+                            matchingThings.append(equipment)
                 weight = 6 - numCriteria
                 match = match * (5 * weight)
                 print "match?"
@@ -289,6 +312,17 @@ def browsegyms():
                         "<br><u>Sunday:</u><br>" + displayHours(gymRow[SUNDAYCOL])
                     hours = hours.replace(": <br>", ": Closed<br>")'''
                     hours = ''
+                    url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "ZVTZDHYIBRLF0FS45CZWB4DQCJNWRF0IRNDPYRIR2A15D5OX").replace("CLIENT_SECRET", "2YHCWD1IVAB5GIJRRKJQRO3TDEIELDGC3OLKAF2BNVHTSLXF")
+                    myloc = geocoder.ip('me').latlng
+                    myloc = str(myloc[0]) + "," + str(myloc[1])
+                    url = url.replace("GYM_ID", gymRow[IDCOL]) + "&ll=" + myloc
+                    jsondata = urllib2.urlopen(url)
+                    distance = round(json.loads(jsondata.read())['response']['venue']['location']['distance']/1609.34, 2)
+                    c.execute("SELECT * FROM GymNotable WHERE GymId = %s", (gymRow[IDCOL],))
+                    gymNotable = []
+                    notableThings = c.fetchall()
+                    for notableThing in notableThings:
+                        gymNotable.append[notableThing[1]]
                     gym = {
                         "id": gymRow[IDCOL],
                         "name": gymRow[NAMECOL],
@@ -298,6 +332,10 @@ def browsegyms():
                         "price": gymRow[PRICECOL],
                         "hours": hours,
                         "address": gymRow[ADDRESSCOL],
+                        "distanceAway": distance,
+                        "notableThings": gymNotable,
+                        "matching": matchingThings,
+                        "notMatching": notMatchingThings,
                         "match": match
                         }
                     gyms.append(gym)
@@ -307,9 +345,21 @@ def browsegyms():
             #User didn't search, show general listings
             c.execute("SELECT * FROM Gyms")
             results = c.fetchall()
+            searched = False
             print "should show all gyms"
             print results
             for result in results:
+                url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "ZVTZDHYIBRLF0FS45CZWB4DQCJNWRF0IRNDPYRIR2A15D5OX").replace("CLIENT_SECRET", "2YHCWD1IVAB5GIJRRKJQRO3TDEIELDGC3OLKAF2BNVHTSLXF")
+                myloc = geocoder.ip('me').latlng
+                myloc = str(myloc[0]) + "," + str(myloc[1])
+                url = url.replace("GYM_ID", result[IDCOL]) + "&ll=" + myloc
+                jsondata = urllib2.urlopen(url)
+                distance = round(json.loads(jsondata.read())['response']['venue']['location']['distance']/1609.34, 2)
+                c.execute("SELECT * FROM GymNotable WHERE GymId = %s", (result[IDCOL],))
+                gymNotable = []
+                notableThings = c.fetchall()
+                for notableThing in notableThings:
+                    gymNotable.append[notableThing[1]]
                 gym = {
                     "id": result[IDCOL],
                     "name": result[NAMECOL],
@@ -318,6 +368,8 @@ def browsegyms():
                     "price": result[PRICECOL],
                     "hours": '',
                     "address": result[ADDRESSCOL],
+                    "distanceAway": distance,
+                    "notableThings": gymNotable,
                     "match": 0
                     }
                 gyms.append(gym)
@@ -381,7 +433,7 @@ def browsegyms():
     #mobility = checkboxify(mobilityList)
     #mobility = mobility + '''<div class="checkbox"><label><input type="checkbox" name="''' + e + '''">''' + capE + '''</label></div>'''
     #print gyms
-    return render_template("browsegyms.html", adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, gyms=gyms, showAll=showAll, equipmentList=equipmentList, weightsList=weightsList, enduranceList=enduranceList, hygeneList=hygeneList, funList=funList, servicesList=servicesList, gymClassList=gymClassList, mobilityList=mobilityList)
+    return render_template("browsegyms.html", adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, gyms=gyms, showAll=showAll, equipmentList=equipmentList, weightsList=weightsList, enduranceList=enduranceList, hygeneList=hygeneList, funList=funList, servicesList=servicesList, gymClassList=gymClassList, mobilityList=mobilityList, searched=searched)
 
 def checkboxify(list):
     ans = ""

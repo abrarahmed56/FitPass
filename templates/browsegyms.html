@@ -553,14 +553,41 @@ yoga mats
 	      <!--<th>Hours</th>-->
 	      <!--<th>Address</th>-->
 	      <th>Distance Away</th>
+	      <th>Notable</th>
+	      {% if searched %}
 	      <th>Matches</th>
 	      <th>Doesn't Match</th>
+	      {% endif %}
 	    </tr>
 	  </thead>
 	  {% for gym in gyms %}
 	  <tr onclick="window.document.location='/gym/{{gym['id']}}'">
 	    <td>{{gym['name']}}</td>
 	    <td>${{gym['price']}}</td>
+	    <td>{{gym['distanceAway']}} miles</td>
+	    <td>
+	      <ul>
+	      {% for notableThing in gym['notableThings'] %}
+	      <li>notableThing</li>
+	      {% endfor %}
+	      </ul>
+	    </td>
+	    {% if searched %}
+	    <td>
+	      {% for matchingThing in gym['matching'] %}
+	      <ul>
+		<li>{{matchingThing}}</li>
+	      </ul>
+	      {% endfor %}
+	    </td>
+	    <td>
+	      {% for notMatchingThing in gym['notMatching'] %}
+	      <ul>
+		<li>{{notMatchingThing}}</li>
+	      </ul>
+	      {% endfor %}
+	    </td>
+	    {% endif %}
 	    <!--<td>{{gym['hours']|safe}}</td>-->
 	    <!--<td>{{gym['address']}}</td>-->
 	  </tr>
