@@ -28,6 +28,7 @@ TYPECOL = 6
 PRICECOL = 7
 MISCCOL = 8
 LASTUPDATECOL = 9
+equipmentList = ['Barbells', 'Basketball Court', 'Belay Device', 'Bench Press', 'Bumper Plates', 'Chalk', 'Crashpads', 'Dumbbells', 'Elliptical', 'Foam Roller', 'Jump Ropes', 'Kettlebells', 'Locker Room', 'Medicine Balls', 'Stairmaster', 'Olympic Weightlifting Platform', 'Parking', 'Personal Training', 'Physical Therapy', 'Pool', 'Power Rack', 'Resistance Bands', 'Rings', 'Rock Climbing Shoes', 'Rowers', 'Sauna', 'Shower', 'Squat Rack', 'Stationary Bikes', 'Stretching Area', 'Towels', 'Treadmill', 'Television', 'WiFi', 'Yoga Mats', 'Zumba', 'Deadlift Space', 'Pilates', 'Track']
 
 @app.route('/')
 def index():
@@ -54,7 +55,6 @@ def browsegyms():
     elif 'goer_id' in session:
         goer_logged_in=True
     gyms = []
-    equipmentList = ['Barbells', 'Basketball Court', 'Belay Device', 'Bench Press', 'Bumper Plates', 'Chalk', 'Crashpads', 'Dumbbells', 'Elliptical', 'Foam Roller', 'Jump Ropes', 'Kettlebells', 'Locker Room', 'Medicine Balls', 'Stairmaster', 'Olympic Weightlifting Platform', 'Parking', 'Personal Training', 'Physical Therapy', 'Pool', 'Power Rack', 'Resistance Bands', 'Rings', 'Rock Climbing Shoes', 'Rowers', 'Sauna', 'Shower', 'Squat Rack', 'Stationary Bikes', 'Stretching Area', 'Towels', 'Treadmill', 'Television', 'WiFi', 'Yoga Mats', 'Zumba', 'Deadlift Space', 'Pilates', 'Track']
     classesList = ['Pilates', 'Rock Climbing', 'Yoga', 'Zumba']
     con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
     with con:
@@ -819,7 +819,6 @@ def edit_gym(gym_id=None):
     with con:
         c = con.cursor()
         manager_logged_in = False
-        equipmentList = ['Barbells', 'Basketball Court', 'Belay Device', 'Bench Press', 'Bumper Plates', 'Chalk', 'Crashpads', 'Dumbbells', 'Elliptical', 'Foam Roller', 'Jump Ropes', 'Kettlebells', 'Locker Room', 'Medicine Balls', 'Stairmaster', 'Olympic Weightlifting Platform', 'Parking', 'Personal Training', 'Physical Therapy', 'Pool', 'Power Rack', 'Resistance Bands', 'Rings', 'Rock Climbing Shoes', 'Rowers', 'Sauna', 'Shower', 'Squat Rack', 'Stationary Bikes', 'Stretching Area', 'Towels', 'Treadmill', 'Television', 'WiFi', 'Yoga Mats', 'Zumba', 'Deadlift Space', 'Pilates', 'Track']
         if 'manager_id' in session:
             manager_logged_in = True
             user_id = session['manager_id']
@@ -1220,6 +1219,7 @@ def update_info():
         #TODO check if manager_id and gym_id in session
         manager_logged_in = False
         goer_logged_in = False
+        return_message = "Update successful!"
         if 'manager_id' in session:
             user_id = session['manager_id']
             gym_id = session['gym_id']
@@ -1233,12 +1233,21 @@ def update_info():
             return "bruh stop screwing with the system"
         if infotype == "Equipment":
             equipment = json.loads(request.form['text'])
-            c.execute("DELETE FROM GymEquipment")
+            c.execute("DELETE FROM GymEquipment WHERE GymId=%s", (gym_id,))
             if manager_logged_in:
                 for lift in equipment:
-                    #print 'lift: ' + lift
-                    #print equipment[lift]
-                    c.execute("INSERT INTO GymEquipment VALUES(%s, %s, %s)", (gym_id, lift, equipment[lift]))
+                    print 'lift: ' + lift
+                    print equipment[lift]
+                    validInt = True
+                    numEquipments = 0
+                    try:
+                        numEquipments = int(equipment[lift])
+                    except:
+                        validInt = False
+                    if lift in equipmentList and validInt:
+                        c.execute("INSERT INTO GymEquipment VALUES(%s, %s, %s)", (gym_id, lift, numEquipments))
+                    else:
+                        return_message = "Update successful for valid equipment"
             elif goer_logged_in:
                 #TODO NEEDS TO BE COMPATIBLE
                 c.execute("SELECT * FROM UserGymUpdates WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
@@ -1276,7 +1285,7 @@ def update_info():
             con.commit()
             if manager_logged_in:
                 update_time(gym_id)
-                return "Update successful!"
+                return return_message
             elif goer_logged_in:
                 return "Thank you for your input!"
         #TODO LET USER UPDATE HOURS
