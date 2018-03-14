@@ -32,11 +32,19 @@ var updateInfo = function(id, sendGym) {
 	console.log(updateValue);
     }
     else if (id==="Price") {
-	var $prices = $("#prices input, #prices select");
+	//var $prices = $("#prices input, #prices select");
+	var $prices = $(".price");
 	console.log($prices);
-	var updateValue = {};
+	//var updateValue = {};
+	var updateValue = []
+	var index = 0;
 	$prices.each(function() {
-		updateValue[this.name] = $(this).val();
+		//updateValue[this.name] = $(this).val();
+		console.log(this);
+		updateValue.push([this.children[1].value, 
+				  this.children[3].value, 
+				  this.children[5].value]);
+		index = index + 3
 	    });
     }
     else {

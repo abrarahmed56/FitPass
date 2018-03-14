@@ -61,15 +61,15 @@ sendGym = false;
     Prices:
     <div id="prices">
     {% for price in gymPrices %}
-    {{price[0]}} per {{price[1]}}
       <div class="input-group price" id="price1">
 	<div class="input-group-addon">$</div><input class="form-control" name="priceValue1" type="number" value={{price[0]}}>
 	<div class="input-group-addon">per</div>
 	<select name="priceUnit1" class="form-control {{price[1]}}">
 	  <option>month</option>
-	  <option>year</option>
 	  <option>class</option>
 	</select>
+	<div class="input-group-addon">for</div>
+	<input class="form-control" name="priceTarget1" placeholder="ie, students, seniors, group, etc." value="{{price[2]}}">
 	<div onclick="removeRow(this.parentElement.id, 'price')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
       </div>
       <script>

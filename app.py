@@ -887,7 +887,7 @@ def edit_gym(gym_id=None):
             gym_prices = c.fetchall()
             gym_prices_list = []
             for gym_price in gym_prices:
-                gym_prices_list.append([gym_price[1], gym_price[2]])
+                gym_prices_list.append([gym_price[1], gym_price[2], gym_price[3]])
             send_gym = False
         return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym, equipmentList=equipmentList)
 
@@ -1233,8 +1233,8 @@ def update_info():
             return "bruh stop screwing with the system"
         if infotype == "Equipment":
             equipment = json.loads(request.form['text'])
-            c.execute("DELETE FROM GymEquipment WHERE GymId=%s", (gym_id,))
             if manager_logged_in:
+                c.execute("DELETE FROM GymEquipment WHERE GymId=%s", (gym_id,))
                 for lift in equipment:
                     print 'lift: ' + lift
                     print equipment[lift]
@@ -1308,8 +1308,26 @@ def update_info():
             return "Update Successful!"
         elif infotype == "Price":
             #TODO FINISH
+            return_message = "Update Successful!"
             if manager_logged_in:
                 print 'manager logged in'
+                prices = json.loads(request.form['text'])
+                c.execute("DELETE FROM GymPrices WHERE GymId=%s", (gym_id,))
+                for price in prices:
+                    print "update price:"
+                    print price
+                    priceAmount = price[0]
+                    priceFrequency = price[1]
+                    priceTarget = price[2]
+                    validInt = True
+                    try:
+                        priceAmount = int(priceAmount)
+                    except:
+                        validInt = False
+                    if validInt:
+                        c.execute("INSERT INTO GymPrices VALUES(%s, %s, %s, %s)",(gym_id, priceAmount, priceFrequency, priceTarget))
+                    else:
+                        return_message = "Update successful for valid prices"
             elif goer_logged_in:
                 user_price = json.loads(request.form['text'])
                 pricesIndex = 1
@@ -1323,7 +1341,7 @@ def update_info():
                         pricesIndex = pricesIndex + 1
                         gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
                         gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
-            return 'hi'
+            return return_message
         else:
             info = request.form['text']
             c.execute("UPDATE Gyms SET Misc=%s WHERE UserId=%s AND GymId=%s", (info.replace('\\"', '&#34;'), user_id, gym_id))
