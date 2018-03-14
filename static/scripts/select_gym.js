@@ -16,7 +16,7 @@ map.on('locationfound', function(e) {
 	//myLocation = e.latlng.lat + "," + e.latlng.lng;
 	map.fitBounds([[40.712895, -73.852834], [40.772895, -73.912834]])
 	myLocation = "40.742895,-73.882834";
-	console.log('found');
+	//console.log('found');
 	myLayer.setGeoJSON({
 		type: 'Feature',
 		    geometry: {
@@ -52,7 +52,7 @@ var foursquarePlaces = L.layerGroup().addTo(map);
 //foursquarePlaces.on("click", function(e) {
 //	console.log("clicked");
 //    });
-console.log('api');
+//console.log('api');
 var bsvar;
 var resetColors = function() {
     for (var i=0; i<availableMarkers.length; i++) {
@@ -106,9 +106,9 @@ var searchGyms = function() {
 			  .addTo(foursquarePlaces);
 		      markers.push(marker);
 		      if (takenGyms.indexOf(venue.id) < 0) {
-			  console.log("not taken");
+			  //console.log("not taken");
 			  marker.on("click", function() {
-				      console.log("hi");
+				      //console.log("hi");
 				      bsvar = this;
 				      resetColors();
 				      this.setIcon(L.mapbox.marker.icon({
@@ -123,8 +123,16 @@ var searchGyms = function() {
 		  }
 	      })
 };
+
+var checkSubmissions = function() {
+    if (document.forms['gymInformation']['gymType'].value === '' || document.forms['gymInformation']['priceValue1'].value === '' || document.forms['gymInformation']['to1'].value === '' || document.forms['gymInformation']['from1'].value === '') {
+	Materialize.toast("Please fill out the required fields", 4000);
+	return false;
+    }
+};
+
 var clearMarkers = function() {
-    console.log(markers);
+    //console.log(markers);
     for (var i=0; i<markers.length; i++) {
 	map.removeLayer(markers[i]);
     }

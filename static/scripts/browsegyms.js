@@ -98,17 +98,17 @@ availableMarkers = [];
 // Once we've got a position, zoom and center the map
 // on it, and add a single marker.
 map.on('locationfound', function(e) {
-	//map.fitBounds([[e.bounds._southWest.lat-.03, e.bounds._southWest.lng-.03], [e.bounds._northEast.lat+.03, e.bounds._northEast.lng+.03]]);
-        //myLocation = e.latlng.lat + "," + e.latlng.lng;
-	map.fitBounds([[40.712895, -73.852834], [40.772895, -73.912834]])
-	myLocation = "40.742895,-73.882834";
+	map.fitBounds([[e.bounds._southWest.lat-.03, e.bounds._southWest.lng-.03], [e.bounds._northEast.lat+.03, e.bounds._northEast.lng+.03]]);
+        myLocation = e.latlng.lat + "," + e.latlng.lng;
+	//map.fitBounds([[40.712895, -73.852834], [40.772895, -73.912834]])
+	//myLocation = "40.742895,-73.882834";
 	console.log('found');
 	myLayer.setGeoJSON({
 		type: 'Feature',
 		    geometry: {
 		    type: 'Point',
-			//coordinates: [e.latlng.lng, e.latlng.lat]
-			coordinates: [40.742895, -73.882834]
+			coordinates: [e.latlng.lng, e.latlng.lat]
+			//coordinates: [40.742895, -73.882834]
 			},
 		    properties: {
 		    'title': 'Here I am!',
@@ -129,25 +129,31 @@ map.attributionControl
     .addAttribution('<a href="https://foursquare.com/">Places data from Foursquare</a>');
 
 var API_ENDPOINT = 'https://api.foursquare.com/v2/venues/search' +
-  '?client_id=CLIENT_ID' +
-  '&client_secret=CLIENT_SECRET' +
-  '&v=20130815' +
-  '&ll=LATLON' +
-  '&query=gym' +
-  '&callback=?';
+    '?client_id=CLIENT_ID' +
+    '&client_secret=CLIENT_SECRET' +
+    '&v=20130815' +
+    '&ll=LATLON' +
+    '&query=gym' +
+    '&callback=?';
 var MY_GYM = 'https://api.foursquare.com/v2/venues/GYM_ID';
 var foursquarePlaces = L.layerGroup().addTo(map);
 var databasePlaces = L.layerGroup().addTo(map);
 var markPlaces = function() {
+    console.log("markPlaces");
     console.log(gyms);
+    //markDatabasePlaces();
     if (showAll) {
 	//mark foursquare places
-    $.getJSON(API_ENDPOINT
+	console.log("before json request");
+	$.getJSON(API_ENDPOINT
 	      .replace('CLIENT_ID', CLIENT_ID)
 	      .replace('CLIENT_SECRET', CLIENT_SECRET)
 	      .replace('LATLON', myLocation), function(result, status) {
 	      //.replace('LATLON', myLayer.getGeoJSON().geometry.coordinates[1] + ',' + myLayer.getGeoJSON().geometry.coordinates[0]), function(result, status) {
+		      console.log("after json request");
 		  if (status !== 'success') return alert('Request to Foursquare failed');
+		  console.log(status);
+		  console.log(result)
 		  for (var i = 0; i < result.response.venues.length; i++) {
 		      var venue = result.response.venues[i];
 		      var latlng = L.latLng(venue.location.lat, venue.location.lng);
@@ -254,9 +260,11 @@ var clearMarkers = function() {
     markers = [];
 };
 var markDatabasePlaces = function() {
-   //mark locations in database
+    //mark locations in database
+    console.log("mdp");
     for (var i=0; i<gyms.length; i++) {
 	var gym = gyms[i];
+	console.log("gym: " + gym);
 	var latlng = L.latLng(gym["lat"], gym["lng"]);
 	var markerColor;
 	if (showAll) {

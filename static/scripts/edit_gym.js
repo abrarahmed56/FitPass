@@ -110,6 +110,7 @@ var addPrice = function() {
     '<option>year</option>' +
     '<option>class</option>' +
     '</select>' +
+    '<div class="input-group-addon">for</div><input class="form-control" name="priceTarget1" placeholder="ie, students, seniors, group, etc.">' +
     '<div onclick="removeRow(this.parentElement.id, &#34;price&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div></div>';
     document.getElementById("prices").appendChild(node);
 };
@@ -145,9 +146,22 @@ var addTime = function() {
     '<option>Saturday</option>' +
     '<option>Sunday</option>' +
     '</select>' +
+    '<div onclick="convertToInputHoursSpecific(this, this.parentNode, ' + timeLength + ')" class="input-group-addon">Click here if these hours are for a specific part of the gym<div></div></div>' +
     '<div onclick="removeRow(this.parentElement.id, &#34;time&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>' +
     '</div>';
     document.getElementById("time").appendChild(node);
+};
+var convertToInputHoursSpecific = function(el, parent, num) {
+    el.innerHTML = "for";
+    var node = document.createElement("input");
+    node.type = "text";
+    node.className = "form-control";
+    node.name = "gymPart" + num;
+    console.log(parent.childNodes[parent.childNodes.length-2]);
+    console.log($(parent).children()[0]);
+    console.log($(parent).children()[$(parent).children().length-1]);
+    parent.insertBefore(node, $(parent).children()[$(parent).children().length-1]);
+    el.onclick = "";
 };
 var removeImage = function(id) {
     console.log(id);
@@ -182,6 +196,7 @@ var removeRow = function(id, className) {
     else if (className==="price") {
 	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
 	    document.getElementsByClassName(className)[i].children[1].id = "priceValue" + (i+1);
+	    document.getElementsByClassName(className)[i].children[3].id = "priceTarget" + (i+1);
 	    document.getElementsByClassName(className)[i].id = className + (i+1);
 	}
     }

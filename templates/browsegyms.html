@@ -12,8 +12,8 @@ $(function()
 {
 	$('.scroll-pane').jScrollPane();
 });
-var CLIENT_ID = 'L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR';
-var CLIENT_SECRET = 'YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA';
+var CLIENT_ID = 'ZVTZDHYIBRLF0FS45CZWB4DQCJNWRF0IRNDPYRIR2A15D5OX';
+var CLIENT_SECRET = '2YHCWD1IVAB5GIJRRKJQRO3TDEIELDGC3OLKAF2BNVHTSLXF';
 var MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoicGluZ3ltcyIsImEiOiJhYjI3YjAwZDU1YmRhMmZlYjljOGYxODNmMjIyYzU2MSJ9.Ssr2xrhyhlIpnSr5rQRFvQ'
 {% if showAll %}
   var showAll = true;
@@ -327,11 +327,11 @@ yoga mats
 	      <input type="radio" name="gymType" class="typeradio" value="dance">Dance<br>
 	    </label>
 	  </div>
-	  <div class="radio">
+	  <!--<div class="radio">
 	    <label>
 	      <input type="radio" name="gymType" class="typeradio" value="nutrition">Nutrition/Weight Loss<br>
 	    </label>
-	  </div>
+	  </div>-->
 	  <button class="btn btn-default" type="button" onclick="clearSelection('typeradio')" >Clear</button>
 	</div>
 	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#equipmentInfo" aria-expanded="false" aria-control="equipmentInfo">+ By Equipment</div>
@@ -380,7 +380,7 @@ yoga mats
 	    </div>
 	  </div>-->
 
-	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#sports">+ Sports-specific:</div>
+	  <!--<div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#sports">+ Sports-specific:</div>
 	  <div id="sports" class="collapse sub-sub-div">
 	    <h5><u>Swimming</u></h5>
 	    <div class="checkbox">
@@ -391,7 +391,7 @@ yoga mats
 	    <h5><u>Endurance</u></h5>
 	    <div class="checkbox">
 	      <label>
-		<input type="checkbox" class="equipmentradio" name="tredmill">Tredmill<br>
+		<input type="checkbox" class="equipmentradio" name="tredmill">Treadmill<br>
 	      </label>
 	    </div>
 	    <div class="checkbox">
@@ -404,46 +404,63 @@ yoga mats
 		<input type="checkbox" class="equipmentradio" name="stairs">Stairs<br>
 	      </label>
 	    </div>
-	  </div>
+	  </div>-->
 
+	  <!--BELOW IS THE LIST OF AMENITIES IN THE "BY EQUIPMENT" CATEGORY-->
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#weights">+ Weights</div>
 	  <div id="weights" class="collapse sub-sub-div">
-	    {{weights|safe}}
+	    {% for weight in weightsList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{weight}}">{{weight}}</label></div>
+	    {% endfor %}
 	  </div>
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#endurance">+ Endurance</div>
 	  <div id="endurance" class="collapse sub-sub-div">
-	    {{endurance|safe}}
+	    {% for enduranceThing in enduranceList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{enduranceThing}}">{{enduranceThing}}</label></div>
+	    {% endfor %}
 	  </div>
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#hygene">+ Hygene</div>
 	  <div id="hygene" class="collapse sub-sub-div">
-	    {{hygene|safe}}
+	    {% for hygeneThing in hygeneList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{hygeneThing}}">{{hygeneThing}}</label></div>
+	    {% endfor %}
 	  </div>
-	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#fun">+ Fun</div>
+	  <!--<div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#fun">+ Fun</div>
 	  <div id="fun" class="collapse sub-sub-div">
-	    {{fun|safe}}
-	  </div>
+	    {% for funThing in funList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{funThing}}">{{funThing}}</label></div>
+	    {% endfor %}
+	  </div>-->
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#services">+ Services</div>
 	  <div id="services" class="collapse sub-sub-div">
-	    {{services|safe}}
+	    {% for servicesThing in servicesList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{servicesThing}}">{{servicesThing}}</label></div>
+	    {% endfor %}
 	  </div>
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#mobility">+ Mobility</div>
 	  <div id="mobility" class="collapse sub-sub-div">
-	    {{mobility|safe}}
+	    {% for mobilityThing in mobilityList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{mobilityThing}}">{{mobilityThing}}</label></div>
+	    {% endfor %}
 	  </div>
 	  <div class="div-hover sub-div collapsed" role="button" data-toggle="collapse" href="#all">+ All</div>
 	  <div id="all" class="collapse sub-sub-div">
-	    {{equipment|safe}}
+	    {% for equipmentThing in equipmentList %}
+            <div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="{{equipmentThing}}">{{equipmentThing}}</label></div>
+	    {% endfor %}
 	  </div>
 	  <button class="btn btn-default" type="button" onclick="clearSelection('equipmentcheckbox')">Clear</button>
 	</div>
 
 	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#classInfo" aria-expanded="false" aria-control="classInfo">+ By Class</div>
 	<div id="classInfo" class="collapse sub-div">
-	  {{gymClass|safe}}
+	  {% for gymClass in gymClassList %}
+	  <div class = "checkbox"><label><input type="checkbox" name="{{gymClass}}">{{gymClass}}</label></div>
+	  {% endfor %}
 	</div>
 
 	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#locInfo" aria-expanded="false" aria-control="locInfo">+ By Location</div>
-	<input type="hidden" id="myLoc" name="myLoc" disabled>
+	<input type="hidden" id="myLoc" name="myLoc">
 	<div id="locInfo" class="collapse sub-div">
 	  <div class="radio">
 	    <label>
@@ -470,6 +487,7 @@ yoga mats
 	      <input type="radio" class="locradio locradioinput" name="loc" value="current">&lt;<input class="form-control currentamount" type="text" name="userDistance" size="3" disabled> miles from current location<br>
 	    </label>
 	  </div>
+	  <!--
 	  <div class="radio form-group">
 	    <label>
 	      <input type="radio" class="locradio locradioinput" name="loc" value="otheraddress">&lt;<input name="otheraddressamount" class="otheraddressamount" type="text" size="3" disabled> miles from <input class="otheraddressamount" type="text" name="userLoc" placeholder="other location" disabled><br>
@@ -481,7 +499,7 @@ yoga mats
 	    </label>
 	  </div>
 	  <input type="text" class="twolocamount" placeholder="Home (enter 'here' if home)" name="ad1" disabled><br>
-	  <input type="text" class="twolocamount" placeholder="Work (enter 'here' if work)" name="ad2" disabled><br>
+	  <input type="text" class="twolocamount" placeholder="Work (enter 'here' if work)" name="ad2" disabled><br>-->
 	  <button class="btn btn-default" type="button" onclick="clearSelection('locradio')">Clear</button><br>
 	</div>
 	<div class="div-hover collapsed" role="button" data-toggle="collapse" href="#hoursInfo" aria-expanded="false" aria-control="hoursInfo">+ By Hours</div>
@@ -495,8 +513,6 @@ yoga mats
 		<input type="time" name="to1" class="form-control">
 		<div class="input-group-addon">on</div>
 		<select class="form-control" name="day1">
-		  <option>Weekdays</option>
-		  <option>Weekends</option>
 		  <option>Monday</option>
 		  <option>Tuesday</option>
 		  <option>Wednesday</option>
@@ -529,23 +545,28 @@ yoga mats
     <div class="row">
       <div class="col-xs-12">
 	<table class="table table-hover table-bordered">
-	  {% if gyms|length > 0 and not showAll %}
+	  {% if gyms|length > 0 %}
 	  <thead>
 	    <tr>
 	      <th>Name</th>
-	      <th>Price</th>
-	      <th>Hours</th>
-	      <th>Address</th>
+	      <th>Price (per month)</th>
+	      <!--<th>Hours</th>-->
+	      <!--<th>Address</th>-->
+	      <th>Distance Away</th>
+	      <th>Matches</th>
+	      <th>Doesn't Match</th>
 	    </tr>
 	  </thead>
 	  {% for gym in gyms %}
 	  <tr onclick="window.document.location='/gym/{{gym['id']}}'">
 	    <td>{{gym['name']}}</td>
 	    <td>${{gym['price']}}</td>
-	    <td>{{gym['hours']|safe}}</td>
-	    <td>{{gym['address']}}</td>
+	    <!--<td>{{gym['hours']|safe}}</td>-->
+	    <!--<td>{{gym['address']}}</td>-->
 	  </tr>
 	  {% endfor %}
+	  {% elif not showAll %}
+	  Sorry, no results found
 	  {% endif %}
         </table>
       </div>

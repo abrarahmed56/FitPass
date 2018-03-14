@@ -24,8 +24,9 @@ LATCOL = 3
 LNGCOL = 4
 ADDRESSCOL = 5
 TYPECOL = 6
-MISCCOL = 7
-LASTUPDATECOL = 8
+PRICECOL = 7
+MISCCOL = 8
+LASTUPDATECOL = 9
 
 @app.route('/')
 def index():
@@ -52,9 +53,18 @@ def browsegyms():
     elif 'goer_id' in session:
         goer_logged_in=True
     gyms = []
+    equipmentList = ['Barbells', 'Basketball Court', 'Belay Device', 'Bench Press', 'Bumper Plates', 'Chalk', 'Crashpads', 'Dumbbells', 'Elliptical', 'Foam Roller', 'Jump Ropes', 'Kettlebells', 'Locker Room', 'Medicine Balls', 'Stairmaster', 'Olympic Weightlifting Platform', 'Parking', 'Personal Training', 'Physical Therapy', 'Pool', 'Power Rack', 'Resistance Bands', 'Rings', 'Rock Climbing Shoes', 'Rowers', 'Sauna', 'Shower', 'Squat Rack', 'Stationary Bikes', 'Stretching Area', 'Towels', 'Treadmill', 'Television', 'WiFi', 'Yoga Mats', 'Zumba', 'Deadlift Space', 'Pilates', 'Track']
+    classesList = ['Pilates', 'Rock Climbing', 'Yoga', 'Zumba']
     con = MySQLdb.connect('127.0.0.1', 'admin', 'a098', 'pingyms')
     with con:
         c = con.cursor()
+        c.execute("SELECT EquipmentName FROM GymEquipment")
+        results = c.fetchall()
+        #equipmentList is all available equipment in gyms
+        '''equipmentList = []
+        for equipment in results:
+            if equipment not in equipmentList:
+                equipmentList.append(equipment[0])'''
         if request.method=="POST":
         #User submitted info to be searched for
             #TODO NEEDS TO BE COMPATIBLE
@@ -63,25 +73,49 @@ def browsegyms():
             for gymRow in gymsql:
                 formDict = request.form.copy()
                 match = 0
+                numCriteria = 0
                 if "price" in request.form:
-                    gymPrice = gymRow[PRICECOL]
-                    requestedPrice = request.form['price']
+                    print "price in request"
+                    numCriteria += 1
+                    #gymPrice = gymRow[PRICECOL]
+                    requested_price = request.form['price']
+                    #print "requested price:"
+                    #print requested_price
+                    #c.execute("SELECT * From GymPrices WHERE GymId=%s AND PriceUnit<=%s", (gymRow[IDCOL], requested_price[:requested_price.find(":")]))
+                    c.execute("SELECT * From GymPrices WHERE GymId=%s", (gymRow[IDCOL],))
+                    gym_prices = c.fetchall()
                     #user inputted price
-                    if "per" in requestedPrice:
-                        if requestedPrice[3:] == gymPrice[gymPrice.find(":")+1:]:
-                            priceDifference = int(gymPrice[:gymPrice.find(":")]) - int(request.form[requestedPrice+'amount'])
-                            if priceDifference > 0:
-                                match = match + math.floor(priceDifference * .5)
+                    if "per" in requested_price:
+                        for gym_price in gym_prices:
+                            if requested_price[requested_price.find(":"):] == gym_price[gym_price.find(":")+1:]:
+                                price_difference = int(gym_price[:gym_price.find(":")]) - int(request.form[requested_price+'amount'])
+                                if price_difference > 0:
+                                    match = match + math.floor(price_difference * .5)
                     #multiple choice price
                     else:
-                        if requestedPrice.split(":")[1] == gymPrice[gymPrice.find(":")+1:]:
-                            priceDifference = int(gymPrice[:gymPrice.find(":")]) - int(requestedPrice.split(":")[0])
-                            if priceDifference > 0:
-                                match = match + math.floor(priceDifference * .5)
+                        #print "multiple choice"
+                        #print gym_prices
+                        for gym_price in gym_prices:
+                            #if requested_price.split(":")[1] == gym_price[gym_price.find(":")+1:]:
+                            if requested_price.split(":")[1] == gym_price[2]:
+                                #price_difference = int(gym_price[:gym_price.find(":")]) - int(requested_price.split(":")[0])
+                                price_difference = gym_price[1] - int(requested_price.split(":")[0])
+                                #print "Price difference:"
+                                #print price_difference
+                                if price_difference > 0:
+                                    match = match + math.floor(price_difference * .5)
+                                #print "match:"
+                                #print match
+                            else:
+                                print "requested:"
+                                print requested_price.split(":")[1]
+                                print "gym price:"
+                                print gym_price[2]
                     del formDict['price']
-                    print 'formdict after price'
-                    print formDict
+                    '''print 'formdict after price'
+                    print formDict'''
                 if "from1" in request.form and "to1" in request.form:
+                    numCriteria += 1
                     hoursIndex = 1
                     fromList = []
                     toList = []
@@ -92,6 +126,7 @@ def browsegyms():
                     #del formDict['from1']
                     #del formDict['to1']
                     #del formDict['day1']
+                    #RESUME HERE HERE HERE HERE
                     while fromVar and toVar and dayVar:
                         del formDict['from'+str(hoursIndex)]
                         del formDict['to'+str(hoursIndex)]
@@ -104,47 +139,79 @@ def browsegyms():
                             fromVar = request.form.get("from"+str(hoursIndex), None)
                             toVar = request.form.get("to"+str(hoursIndex), None)
                             dayVar = request.form.get("day"+str(hoursIndex), None)
-                    match = match + analyzeHours(gymRow, dayList, fromList, toList)
+                    print dayList
+                    print fromList
+                    print toList
+                    #match = match + analyzeHours(gymRow, dayList, fromList, toList)
                     for timeIndex in range(len(fromList)):
-                        fromVar = fromList[timeIndex]
-                        toVar = toList[timeIndex]
-                        dayVar = dayList[timeIndex]
-                        print "s: " + fromVar
-                        print "t: " + toVar
-                        print "d: " + dayVar
+                        desiredStartTime = datetime.datetime.strptime(fromList[timeIndex], "%H:%M")
+                        desiredEndTime = datetime.datetime.strptime(toList[timeIndex], "%H:%M")
+                        desiredDay = dayList[timeIndex]
+                        print "from: " + str(desiredStartTime)
+                        print "to: " + str(desiredEndTime)
+                        print "day: " + desiredDay
+                        c.execute("SELECT * FROM GymHours WHERE GymId=%s AND Day=%s", (gymRow[IDCOL], desiredDay,))
+                        results = c.fetchall()
+                        for result in results:
+                            #gymStartTime = int(result[2].split(":")[0])
+                            gymStartTime = datetime.datetime.strptime(result[2], "%H:%M")
+                            gymEndTime = datetime.datetime.strptime(result[3], "%H:%M")
+                            #opens at a good time
+                            if desiredStartTime >= gymStartTime:
+                                #closes at a good time
+                                if desiredEndTime <= gymEndTime:
+                                    match = match - 3
+                                #closes earlier than wanted
+                                else:
+                                    numTimeAvailable = (gymEndTime - desiredStartTime).seconds/3600
+                                    match = match + (3 - min(3, numTimeAvailable)) / 2
+                            #opens later than wanted
+                            else:
+                                #closes at a good time
+                                if desiredEndTime <= gymEndTime:
+                                    numTimeAvailable = (desiredEndTime - gymStartTime).seconds/3600
+                                    match = match + (3 - min(3, numTimeAvailable)) / 2
+                                #closes earlier than wanted
+                                else:
+                                    numTimeAvailable = (gymEndTime - gymStartTime).seconds/3600
+                                    match = match + (3 - min(3, numTimeAvailable)) / 2
+                        if len(results) == 0 :
+                            match = match + 2
                 if "gymType" in request.form:
-                    print "wanted gymType: " + request.form['gymType']
-                    print "actual gymType: " + gymRow[TYPECOL]
+                    numCriteria += 1
+                    #print "wanted gymType: " + request.form['gymType']
+                    #print "actual gymType: " + gymRow[TYPECOL]
                     if request.form['gymType'] != gymRow[TYPECOL]:
                         match = match + 20
                     del formDict['gymType']
-                print formDict
+                #print formDict
                 #TODO: location, then finally, equipment
                 if "loc" in request.form:
-                    url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR").replace("CLIENT_SECRET", "YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA")
-                    print url
+                    numCriteria += 1
+                    url = "https://api.foursquare.com/v2/venues/GYM_ID?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&v=20130815".replace("CLIENT_ID", "ZVTZDHYIBRLF0FS45CZWB4DQCJNWRF0IRNDPYRIR2A15D5OX").replace("CLIENT_SECRET", "2YHCWD1IVAB5GIJRRKJQRO3TDEIELDGC3OLKAF2BNVHTSLXF")
+                    #print url
                     print "loc: " + request.form['loc']
                     userLoc = request.form['loc']
                     if userLoc == "otheraddress":
                         #url = https://api.foursquare.com/v2/venues/search?client_id=L4UK14EMS0MCEZOVVUYX2UO5ULFHJN3EHOFVQFSW0Z1MSFSR&client_secret=YKJB0JRFDPPSGTHALFOEP5O1NDDATHKQ2IZ5RO2GOX452SFA&v=20130815&ll=40.7426683,-73.8831344&query=gym&address=4210%2082nd%20st%20elmhurst%20ny%2011373&radius=8046.72
                         ####gets gyms near my address
                         url = url.replace("GYM_ID", "search") + "&address=" + request.form['userLoc'].replace(" ", "%20") + "&radius=" + str(float(request.form['otheraddressamount'])*1609.34) + "&ll=" + request.form['myLoc'] + "&query=gym%20fitness"
-                        print "othr"
-                        print url
+                        #print "othr"
+                        #print url
                         jsondata = urllib2.urlopen(url)
                         foursquareGyms = json.loads(jsondata.read())['response']['venues']
                         gymWithinRadius = False
                         for foursquareGym in foursquareGyms:
                             if foursquareGym['id'] == gymRow[IDCOL]:
                                 gymWithinRadius = True
-                                print foursquareGym['name']
-                                print foursquareGym['id']
-                                print "gym in gymsql!"
+                                #print foursquareGym['name']
+                                #print foursquareGym['id']
+                                #print "gym in gymsql!"
                         if not gymWithinRadius:
                             #TODO select a random gym, use distance between that gym and gymRow[IDCOL]
                             if len(foursquareGyms)>0:
                                 randIndex = randrange(0, len(foursquareGyms))
-                                print randIndex
+                                #print randIndex
                             else:
                                 match = match + 3
                     elif userLoc == "twoloc":
@@ -159,26 +226,40 @@ def browsegyms():
                         #print url
                         print "Not yet, my friend"
                     else:
+                        print "else"
+                        print request.form
+                        if 'myLoc' not in request.form:
+                            return "Sorry, there was an error, please try again"
                         url = url.replace("GYM_ID", gymRow[IDCOL]) + "&ll=" + request.form['myLoc']
+                        print url
+                        print request.form
                         jsondata = urllib2.urlopen(url)
                         distance = json.loads(jsondata.read())['response']['venue']['location']['distance']/1609.34
-                        if userLoc =="current":
+                        #userDistance refers to the user's chosen distance limit
+                        if userLoc == "current":
                             userDistance = request.form['userDistance']
                         else:
                             userDistance = userLoc
                         if distance > float(userDistance):
                             match = match + (distance-float(userDistance))
-                        print "num from current: " + userLoc
-                        print "my address: " + request.form['myLoc']
-                        print "gym address: " + str(gymRow[LATCOL]) + "," + str(gymRow[LNGCOL])
-                        if distance > userLoc:
-                            match = match + (userLoc-distance)
+                        #print "num from current: " + userLoc
+                        #print "my address: " + request.form['myLoc']
+                        #print "gym address: " + str(gymRow[LATCOL]) + "," + str(gymRow[LNGCOL])
                     del formDict['loc']
-                print formDict
+                #print formDict
+
+
                 for equipment in formDict:
-                    print equipment
-                    if equipment in globalEquipmentList:
-                        words = equipment.split(" ")
+                    if equipment in equipmentList:
+                        print "equipment:"
+                        print equipment
+                        c.execute("SELECT * FROM GymEquipment WHERE GymId=%s AND EquipmentName=%s", (gymRow[IDCOL], equipment))
+                        results = c.fetchall()
+                        if not results:
+                            match = match + 2
+                        else:
+                            match = match - 1
+                        '''words = equipment.split(" ")
                         i = 0
                         while i < len(words):
                             words[i] = words[i].capitalize()
@@ -186,50 +267,76 @@ def browsegyms():
                             capEquipment = "_".join(words)
                         c.execute("SELECT " + capEquipment + " from Gyms WHERE GymId=%s LIMIT 1", (gymRow[IDCOL],))
                         if int(c.fetchone()[0]) <= 0:
-                            match = match + 3
+                            match = match + 3'''
+                    elif equipment in classesList:
+                        c.execute("SELECT * FROM GymClasses WHERE GymId=%s AND ClassName=%s", (gymRow[IDCOL], equipment))
+                        results = c.fetchall()
+                        if not results:
+                            match = match + 5
+                        else:
+                            match = match - 3
+                weight = 6 - numCriteria
+                match = match * (5 * weight)
+                print "match?"
+                print match
                 if match < 50:
-                    hours= "<u>Monday:</u><br>" + displayHours(gymRow[MONDAYCOL]) + \
+                    '''hours= "<u>Monday:</u><br>" + displayHours(gymRow[MONDAYCOL]) + \
                         "<br><u>Tuesday:</u><br>" + displayHours(gymRow[TUESDAYCOL]) + \
                         "<br><u>Wednesday:</u><br>" + displayHours(gymRow[WEDNESDAYCOL]) + \
                         "<br><u>Thursday:</u><br>" + displayHours(gymRow[THURSDAYCOL]) + \
                         "<br><u>Friday:</u><br>" + displayHours(gymRow[FRIDAYCOL]) + \
                         "<br><u>Saturday:</u><br>" + displayHours(gymRow[SATURDAYCOL]) + \
                         "<br><u>Sunday:</u><br>" + displayHours(gymRow[SUNDAYCOL])
-                    hours = hours.replace(": <br>", ": Closed<br>")
+                    hours = hours.replace(": <br>", ": Closed<br>")'''
+                    hours = ''
                     gym = {
                         "id": gymRow[IDCOL],
                         "name": gymRow[NAMECOL],
                         "lat": gymRow[LATCOL],
                         "lng": gymRow[LNGCOL],
-                        "price": gymRow[PRICECOL].replace(":", " per "),
+                        #"price": '',#gymRow[PRICECOL].replace(":", " per "),
+                        "price": gymRow[PRICECOL],
                         "hours": hours,
                         "address": gymRow[ADDRESSCOL],
                         "match": match
                         }
                     gyms.append(gym)
-                print match
+                print "match: " + str(match)
             showAll = False
         else:
             #User didn't search, show general listings
             c.execute("SELECT * FROM Gyms")
             results = c.fetchall()
+            print "should show all gyms"
+            print results
             for result in results:
                 gym = {
                     "id": result[IDCOL],
                     "name": result[NAMECOL],
                     "lat": result[LATCOL],
-                    "lng": result[LNGCOL]
+                    "lng": result[LNGCOL],
+                    "price": result[PRICECOL],
+                    "hours": '',
+                    "address": result[ADDRESSCOL],
+                    "match": 0
                     }
                 gyms.append(gym)
             showAll = True
-    equipmentList = ['barbells', 'basketball court', 'belay device', 'bench press', 'bumper plates', 'chalk', 'crashpads', 'dumbbells', 'elliptical', 'foam roller', 'jump ropes', 'kettlebells', 'locker room', 'medicine balls', 'stairmaster', 'olympic weightlifting platform', 'parking', 'personal trainer', 'physical therapy', 'pool', 'power rack', 'resistance bands', 'rings', 'rock climbing shoes', 'rowers', 'sauna', 'shower', 'squat rack', 'stationary bikes', 'stretching area', 'towels', 'tredmill', 'television', 'wifi', 'yoga mats', 'zumba', 'deadlift space', 'pilates', 'track']
-    weightsList = ['squat rack', 'power rack', 'bench press', 'deadliift space', 'olympic weightlifting platform', 'dumbbells', 'kettlebells', 'barbells']
-    enduranceList = ['tredmill', 'stairmaster', 'elliptical', 'kettlebells', 'pool', 'track', 'jump ropes', 'stationary bike']
-    hygeneList = ['shower', 'locker room', 'sauna', 'towels']
-    funList = ['wifi', 'television']
-    servicesList = ['personal training', 'physical therapy', 'wifi', 'television', 'parking']
-    gymClassList = ['yoga', 'pilates', 'zumba', 'rock climbing']
-    mobilityList = ['stretching area', 'foam roller']
+    c.execute("SELECT EquipmentName FROM GymEquipment")
+    equipment_names_sql = c.fetchall()
+    equipment_names = []
+    for equipment_name in equipment_names_sql:
+        if equipment_name[0] not in equipment_names:
+            equipment_names.append(equipment_name[0])
+    #print equipment_names
+    basic_list = []
+    weightsList = ['Squat Rack', 'Power Rack', 'Bench Press', 'Deadliift Platform', 'Olympic Weightlifting Platform', 'Dumbbells', 'Kettlebells', 'Barbells']
+    enduranceList = ['Treadmill', 'Stairmaster', 'Elliptical', 'Kettlebells', 'Pool', 'Track', 'Jump Ropes', 'Stationary Bike']
+    hygeneList = ['Shower', 'Lockers', 'Sauna', 'Towels']
+    funList = ['WiFi', 'Television']
+    servicesList = ['Personal Training', 'Physical Therapy', 'WiFi', 'Television', 'Parking']
+    gymClassList = ['Yoga', 'Pilates', 'Zumba', 'Rock Climbing']
+    mobilityList = ['Stretching Area', 'Foam Roller']
     equipmentList.sort()
     weightsList.sort()
     enduranceList.sort()
@@ -238,40 +345,43 @@ def browsegyms():
     servicesList.sort()
     gymClassList.sort()
     mobilityList.sort()
-    equipment = ""
+
+    '''equipment = ""
     weights = ""
     endurance = ""
     hygene = ""
     fun = ""
     services = ""
     gymClass = ""
-    mobility = ""
-    #for e in globalEquipmentList:
-    equipment = checkboxify(globalEquipmentList)
+    mobility = ""'''
+
+    #equipment = checkboxify(equipmentList)
+    #equipment = equipmentList
     #equipment = equipment + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in weightsList:
-    weights = checkboxify(weightsList)
+
+    #weights = checkboxify(weightsList)
+    #weights = weightsList
     #weights = weights + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in enduranceList:
-    endurance = checkboxify(enduranceList)
+
+    #endurance = checkboxify(enduranceList)
     #endurance = endurance + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in hygeneList:
-    hygene = checkboxify(hygeneList)
+
+    #hygene = checkboxify(hygeneList)
     #hygene = hygene + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in funList:
-    fun = checkboxify(funList)
+
+    #fun = checkboxify(funList)
     #fun = fun + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in servicesList:
-    services = checkboxify(servicesList)
+
+    #services = checkboxify(servicesList)
     #services = services + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in gymClassList:
-    gymClass = checkboxify(gymClassList)
+
+    #gymClass = checkboxify(gymClassList)
     #gymClass = gymClass + '''<div class="checkbox"><label><input type="checkbox" class="equipmentcheckbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    #for e in mobilityList:
-    mobility = checkboxify(mobilityList)
+
+    #mobility = checkboxify(mobilityList)
     #mobility = mobility + '''<div class="checkbox"><label><input type="checkbox" name="''' + e + '''">''' + capE + '''</label></div>'''
-    print gyms
-    return render_template("browsegyms.html", adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, gyms=gyms, showAll=showAll, equipment=equipment, weights=weights, endurance=endurance, hygene=hygene, fun=fun, services=services, gymClass=gymClass, mobility=mobility)
+    #print gyms
+    return render_template("browsegyms.html", adminLoggedIn=admin_logged_in, managerLoggedIn=manager_logged_in, goerLoggedIn=goer_logged_in, gyms=gyms, showAll=showAll, equipmentList=equipmentList, weightsList=weightsList, enduranceList=enduranceList, hygeneList=hygeneList, funList=funList, servicesList=servicesList, gymClassList=gymClassList, mobilityList=mobilityList)
 
 def checkboxify(list):
     ans = ""
@@ -288,13 +398,13 @@ def checkboxify(list):
 def displayHours(hours):
     if hours=="":
         return "Closed<br>"
-    print 'hours:'
-    print hours
+    #print 'hours:'
+    #print hours
     hoursList = hours.split(";")
     displayedHours = ""
     for hoursSet in hoursList:
-        print "HoursSet: "
-        print hoursSet
+        #print "HoursSet: "
+        #print hoursSet
         newHoursSet = []
         for oneTime in hoursSet.split("-"):
             if int(oneTime.split(":")[0]) > 12:
@@ -310,6 +420,37 @@ def analyzeHours(gymRow, dayList, userStartList, userEndList):
     match = 0
     while dayIndex < len(dayList):
         day = dayList[dayIndex]
+        userStartVar = userStartList[dayIndex]
+        userEndVar = userEndList[dayIndex]
+        numTimeWanted = float(userEndVar.split(":")[0]) - float(userStartVar.split(":")[0]) + (float(userEndVar.split(":")[1])/60) - (float(userStartVar.split(":")[1])/60)
+        numTimeAvailable = 0
+        c.execute("SELECT * FROM GymHours WHERE Day=%s", (day,))
+        results = c.fetchall()
+        if results:
+            gymStartVar = gymHours.split("-")[0]
+            gymEndVar = gymHours.split("-")[1]
+            #opens at good time
+            if userStartVar >= gymStartVar and userStartVar < gymEndVar:
+                #closes earlier than wanted
+                if userEndVar > gymEndVar:
+                    numTimeAvailable = numTimeAvailable + float(gymEndVar.split(":")[0]) - float(userStartVar.split(":")[0]) + (float(gymEndVar.split(":")[1])/60) - (float(userStartVar.split(":")[1])/60)
+                #closes at good time
+                else:
+                    numTimeAvailable = numTimeWanted# + numTimeAvailable
+            #opens later than wanted
+            elif userStartVar < gymStartVar and userEndVar > gymStartVar:
+                #closes earlier than wanted
+                if userEndVar > gymEndVar:
+                    numTimeAvailable = numTimeAvailable + float(gymEndVar.split(":")[0]) - float(gymStartVar.split(":")[0]) + (float(gymEndVar.split(":")[1])/60) - (float(gymStartVar.split(":")[1])/60)
+                #closes at good time
+                else:
+                    numTimeAvailable = numTimeAvailable + float(userEndVar.split(":")[0]) - float(gymStartVar.split(":")[0]) + (float(userEndVar.split(":")[1])/60) - (float(gymStartVar.split(":")[1])/60)
+            match = match + ((numTimeWanted-numTimeAvailable)*5)
+        else:
+            match = match + 15
+        #print "time wanted: " + str(numTimeWanted)
+        #print "time available: " + str(numTimeAvailable)
+        '''
         if day=="Weekdays":
             dayList.extend(("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
             startVar = userStartList[0]
@@ -333,22 +474,29 @@ def analyzeHours(gymRow, dayList, userStartList, userEndList):
                 if gymHours != "":
                     gymStartVar = gymHours.split("-")[0]
                     gymEndVar = gymHours.split("-")[1]
-                    if userStartVar >= gymStartVar and userStartVar < gymEndVar: #opens at good time
-                        if userEndVar > gymEndVar: #closes earlier than wanted
+                    #opens at good time
+                    if userStartVar >= gymStartVar and userStartVar < gymEndVar:
+                        #closes earlier than wanted
+                        if userEndVar > gymEndVar:
                             numTimeAvailable = numTimeAvailable + float(gymEndVar.split(":")[0]) - float(userStartVar.split(":")[0]) + (float(gymEndVar.split(":")[1])/60) - (float(userStartVar.split(":")[1])/60)
-                        else: #closes at good time
-                            numTimeAvailable = numTimeWanted
-                    elif userStartVar < gymStartVar and userEndVar > gymStartVar: #opens later than wanted
-                        if userEndVar > gymEndVar: #closes earlier than wanted
+                        #closes at good time
+                        else:
+                            numTimeAvailable = numTimeWanted# + numTimeAvailable
+                    #opens later than wanted
+                    elif userStartVar < gymStartVar and userEndVar > gymStartVar:
+                        #closes earlier than wanted
+                        if userEndVar > gymEndVar:
                             numTimeAvailable = numTimeAvailable + float(gymEndVar.split(":")[0]) - float(gymStartVar.split(":")[0]) + (float(gymEndVar.split(":")[1])/60) - (float(gymStartVar.split(":")[1])/60)
-                        else: #closes at good time
+                        #closes at good time
+                        else:
                             numTimeAvailable = numTimeAvailable + float(userEndVar.split(":")[0]) - float(gymStartVar.split(":")[0]) + (float(userEndVar.split(":")[1])/60) - (float(gymStartVar.split(":")[1])/60)
                     print "time wanted: " + str(numTimeWanted)
                     print "time available: " + str(numTimeAvailable)
                 match = match + ((numTimeWanted-numTimeAvailable)*5)
+                '''
         dayIndex = dayIndex + 1
-    print "match:"
-    print match
+    #print "match:"
+    #print match
     return match
 
 def settings():
@@ -427,7 +575,7 @@ def admin_select_gym():
             taken_gyms = get_gyms()
             equipment = ""
             j = 0
-            while j < len(globalEquipmentList):
+            """while j < len(globalEquipmentList):
                 e = globalEquipmentList[j]
                 words = e.split(" ")
                 i = 0
@@ -437,7 +585,7 @@ def admin_select_gym():
                 capE = " ".join(words)
                 undE = "_".join(words)
                 equipment = equipment + str('''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s><input class='equipment' id='%s' name='%s' type="text" value="0" size="2" maxamount="2" disabled>%s</label></div>'''%(e, e, e, undE, capE))
-                j = j + 1
+                j = j + 1"""
             return render_template("admin_select_gym.html", equipment=equipment, takenGyms=taken_gyms)
         else:
             flash("You aren't logged in")
@@ -457,7 +605,7 @@ def gym_manager_login():
             return redirect(url_for("login"))
         else:
             result = result[0]
-        print result
+        #print result
         if not validate_password(result, password):
             c.execute("SELECT * FROM GymManagers")
             flash("Credentials incorrect")
@@ -596,7 +744,7 @@ def select_gym():
             c = con.cursor()
             taken_gyms = get_gyms()
             equipment = ""
-            j = 0
+            """j = 0
             while j < len(globalEquipmentList):
                 e = globalEquipmentList[j]
                 words = e.split(" ")
@@ -607,7 +755,7 @@ def select_gym():
                 capE = " ".join(words)
                 undE = "_".join(words)
                 equipment = equipment + str('''<div class="checkbox"><label><input onchange="endisable('%s')" type="checkbox" class="equipmentcheckbox" name=%s><input id='%s' name='%s' type="text" value="0" size="2" maxamount="2" disabled>%s</label></div>'''%(e, e, e, undE, capE))
-                j = j + 1
+                j = j + 1"""
             return render_template("select_gym.html", user=user, takenGyms=taken_gyms, equipment=equipment)
         return "Error"
     return "Error"
@@ -849,7 +997,7 @@ def get_user_email(user_id):
         c = con.cursor()
         c.execute("SELECT Email FROM GymGoers WHERE UserId=%s LIMIT 1", (user_id,))
         result = c.fetchone()
-        print result
+        #print result
         if result:
             return result[0]
         else:
@@ -861,7 +1009,7 @@ def get_user_id(user_email):
         c = con.cursor()
         c.execute("SELECT UserId FROM GymGoers WHERE Email=%s LIMIT 1", (user_email,))
         result = c.fetchone()
-        print result
+        #print result
         if result:
             return result[0]
         else:
@@ -919,17 +1067,23 @@ def add_gym():
             #toList = []
             #dayList = []
             #gymPrice = request.form['priceValue1'] + ":" + request.form['priceUnit1']
+            #INSERT GYM PRICE INTO DATABASE
             pricesIndex = 1
             gymPriceValue = request.form['priceValue1']
             gymPriceUnit = request.form['priceUnit1']
-            while gymPriceValue and gymPriceUnit:
+            gymPriceTarget = request.form['priceTarget1']
+            while gymPriceValue and gymPriceUnit and gymPriceTarget:
                 del formDict['priceValue'+str(pricesIndex)]
                 del formDict['priceUnit'+str(pricesIndex)]
-                if gymPriceValue != "":
-                    c.execute("INSERT INTO GymPrices VALUES (%s, %s, %s)", (gym_id, gymPriceValue, gymPriceUnit))
+                del formDict['priceTarget'+str(pricesIndex)]
+                if gymPriceValue != "" and ( gymPriceUnit == "month" or gymPriceUnit == "year" or gymPriceUnit == "day" or gymPriceUnit == "class" ):
+                    c.execute("INSERT INTO GymPrices VALUES (%s, %s, %s, %s)", (gym_id, gymPriceValue, gymPriceUnit, gymPriceTarget))
                     pricesIndex = pricesIndex + 1
                     gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
                     gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
+                else:
+                    flash("Bro please stop messing with the console")
+            #INSERT GYM HOURS INTO DATABASE
             hoursIndex = 1
             fromVar = request.form['from1']
             toVar = request.form['to1']
@@ -940,17 +1094,15 @@ def add_gym():
                 del formDict['to'+str(hoursIndex)]
                 del formDict['day'+str(hoursIndex)]
                 #TODO CHECK IF VALUES ENTERED ARE VALID--NO INTERSECTING HOURS
+                ###IF VALUES GET CHECKED, IT'S BETTER TO CHECK VALUES IN /SELECTGYM
                 if fromVar != "" and toVar != "":
-                    #TODO UNDO REPLACE :, INSTEAD CHANGE LIMIT IN RESET
-                    #ACTUALLY, IT'LL SAVE MEMORY TO STORE WITHOUT IT
-                    #IDK
-                    c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar.replace(":", ""), toVar.replace(":", "")))
+                    c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s)", (gym_id, dayVar, fromVar, toVar))
                     hoursIndex = hoursIndex + 1
                     fromVar = request.form.get("from"+str(hoursIndex), None)
                     toVar = request.form.get("to"+str(hoursIndex), None)
                     dayVar = request.form.get("day"+str(hoursIndex), None)
-            #misc = request.form['misc']
-            misc = ''
+            if 'misc' in request.form:
+                misc = request.form['misc']
             timeNow = datetime.datetime.now().ctime() + " by Gym Manager"
             c.execute("SELECT * FROM Gyms WHERE UserId=%s AND GymId=%s LIMIT 1", (user_id, gym_id))
             if c.fetchone()==None:
@@ -1027,8 +1179,8 @@ def update_info():
             c.execute("DELETE FROM GymEquipment")
             if manager_logged_in:
                 for lift in equipment:
-                    print 'lift: ' + lift
-                    print equipment[lift]
+                    #print 'lift: ' + lift
+                    #print equipment[lift]
                     c.execute("INSERT INTO GymEquipment VALUES(%s, %s, %s)", (gym_id, lift, equipment[lift]))
             elif goer_logged_in:
                 #TODO NEEDS TO BE COMPATIBLE
@@ -1043,8 +1195,8 @@ def update_info():
                             listresult.append(0)
                         for gym_class in globalClassesList:
                             listresult.append(0)
-                        print "list result:"
-                        print listresult
+                        #print "list result:"
+                        #print listresult
                         tupleresult = tuple(listresult)
                     else:
                         listresult = list(result[0])
@@ -1054,13 +1206,13 @@ def update_info():
                     for item in tupleresult:
                         updateRow = updateRow + "%s, "
                     updateRow = updateRow[:-2] + ")"
-                    print updateRow
+                    #print updateRow
                     c.execute(updateRow, tupleresult)
                     return "Thank you!"
                 #TODO CHECK IF LIFT IS IN EQUIPMENT
                 for lift in equipment:
-                    print 'lift: ' + lift
-                    print 'amaount: ' + equipment[lift]
+                    #print 'lift: ' + lift
+                    #print 'amaount: ' + equipment[lift]
                     #print gym_id
                     c.execute("UPDATE UserGymUpdates SET " + lift + "=%s WHERE UserId=%s AND GymId=%s", (equipment[lift], user_id, gym_id))
                     c.execute("DELETE FROM UserGymVotes WHERE UpdaterId=%s AND GymId=%s", (user_id, gym_id))
@@ -1091,7 +1243,7 @@ def update_info():
         elif infotype == "Price":
             #TODO FINISH
             if manager_logged_in:
-                print 'hello'
+                print 'manager logged in'
             elif goer_logged_in:
                 user_price = json.loads(request.form['text'])
                 pricesIndex = 1

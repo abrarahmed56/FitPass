@@ -24,9 +24,9 @@
       <div class="clearfix"></div>
       Please select your gym and enter its information<br>
       <form onsubmit="searchGyms(); return false;">
-      Search for your gym: <input id="search" type="text"><button class="btn">Search</button>
+      Search for your gym<span style="color:red">*</span>: <input id="search" type="text"><button class="btn">Search</button>
       </form>
-      <form action="/addgym" method="POST">
+      <form name="gymInformation" action="/addgym" onsubmit="return checkSubmissions();" method="POST">
       <div id="map" style="width:300px; height:300px;"></div>
       <br>
       <h2>Amenities:</h2>
@@ -48,7 +48,7 @@
 	<button onclick="addEquipment()" type="button" class="btn btn-default">+Add another piece of equipment</button>
       </div>
 	<div class="form-group">
-	  Prices:
+	  Prices<span style="color:red">*</span>:
 	  <div id="prices">
 	    <div class="input-group price" id="price1">
 	      <div class="input-group-addon">$</div><input class="form-control" name="priceValue1" type="number" value={{price}}>
@@ -56,15 +56,17 @@
 	      <select name="priceUnit1" class="form-control">
 		<option>month</option>
 		<option>year</option>
+		<option>day</option>
 		<option>class</option>
 	      </select>
+	      <div class="input-group-addon">for</div><input class="form-control" name="priceTarget1" placeholder="ie, students, seniors, group, etc.">
 	      <div onclick="removeRow(this.parentElement.id, 'price')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
 	    </div>
 	  </div>
 	  <button onclick="addPrice()" type="button" class="btn btn-default">+Add another pricing</button>
 	</div>
       <!--</form>-->
-      Type:
+      Type<span style="color:red">*</span>:
       <div class="radio">
 	<label>
 	  <input type="radio" name="gymType" class="typeradio" value="rec">Recreational Fitness<br>
@@ -101,7 +103,7 @@
 	</label>
       </div>
       
-      Hours:
+      Hours<span style="color:red">*</span>:
       <div class="form-group">
 	<div id="time">
 	  <div class="input-group time" id="time1">
@@ -122,6 +124,7 @@
 	      <option>Saturday</option>
 	      <option>Sunday</option>
 	    </select>
+	    <div onclick="convertToInputHoursSpecific(this, this.parentNode, 1)" class="input-group-addon">Click here if these hours are for a specific part of the gym<div></div></div>
 	    <div onclick="removeRow(this.parentElement.id, 'time')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
 	  </div>
 	</div>
@@ -129,18 +132,16 @@
 	<br>
       </div>
       <!--TODO FIGURE OUT WHAT TO DO ABOUT QUOTES-->
-      Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
-<br>
-Misc/Extras:<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>
-<br>
-Images/Videos:<br>
-<button class="btn">Upload</button>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="/static/scripts/edit_gym.js"></script>
-<!--<input name="gymId" id="gymId" type="hidden">-->
-<br>
-<br>
-<button class="btn btn-default btn-lg" type="submit">Verify Your Gym</button>
+      Misc/Extras:<textarea class="form-control" name="misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>
+      <br>
+      Images/Videos:<br>
+      <button class="btn">Upload</button>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <script src="/static/scripts/edit_gym.js"></script>
+      <!--<input name="gymId" id="gymId" type="hidden">-->
+      <br>
+      <br>
+      <button class="btn btn-default btn-lg" type="submit">Verify Your Gym</button>
       </form>
     </div>
   </div>
