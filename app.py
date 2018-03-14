@@ -865,9 +865,9 @@ def edit_gym(gym_id=None):
             gym_hours = c.fetchall()
             for gym_hour in gym_hours:
                 if gym_hour[1] in gym_hours_dict:
-                    gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
+                    gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + gym_hour[2][2:], gym_hour[3][:2] + gym_hour[3][2:], gym_hour[4]])
                 else:
-                    gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
+                    gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + gym_hour[2][2:], gym_hour[3][:2] + gym_hour[3][2:], gym_hour[4]]]
             monday = ""
             tuesday = ""
             wednesday = ""
@@ -882,6 +882,8 @@ def edit_gym(gym_id=None):
                 gym_equipment_dict[result[1]] = result[2]
             equipment = gym_equipment_dict
             hours = gym_hours_dict
+            print "gym_hours_dict:"
+            print gym_hours_dict
             gym_imgs = os.listdir(os.path.join(app.config["UPLOAD_FOLDER"], gym[IDCOL]))
             c.execute("SELECT * FROM GymPrices WHERE GymId=%s", (gym_id,))
             gym_prices = c.fetchall()
@@ -1291,7 +1293,13 @@ def update_info():
         #TODO LET USER UPDATE HOURS
         elif infotype == "Hours":
             hours = json.loads(request.form['text'])
-            hoursIndex = 1
+            print "hours:"
+            print hours
+            c.execute("DELETE FROM GymHours WHERE GymId=%s", (gym_id,))
+            for hour in hours:
+                print hour
+                c.execute("INSERT INTO GymHours VALUES(%s, %s, %s, %s, %s)", (gym_id, hour[2], hour[0], hour[1], hour[3]))
+            '''hoursIndex = 1
             fromVar = hours['from1']
             toVar = hours['to1']
             dayVar = hours['day1']
@@ -1302,12 +1310,11 @@ def update_info():
                 hoursIndex = hoursIndex + 1
                 fromVar = hours.get("from"+str(hoursIndex), None)
                 toVar = hours.get("to"+str(hoursIndex), None)
-                dayVar = hours.get("day"+str(hoursIndex), None)
+                dayVar = hours.get("day"+str(hoursIndex), None)'''
             con.commit()
             update_time(gym_id)
             return "Update Successful!"
         elif infotype == "Price":
-            #TODO FINISH
             return_message = "Update Successful!"
             if manager_logged_in:
                 print 'manager logged in'

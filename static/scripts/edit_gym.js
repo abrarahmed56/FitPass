@@ -22,13 +22,17 @@ var updateInfo = function(id, sendGym) {
 	    });
     }
     else if (id==="Hours") {
-	var $hoursinfo = $("#hours input, #hours select");
-	var updateValue = {};
+	//var $hoursinfo = $("#hours input, #hours select");
+	var $hoursinfo = $(".time");
+	var updateValue = [];
 	console.log($hoursinfo);
 	$hoursinfo.each(function() {
-		updateValue[this.name] = $(this).val();
+		updateValue.push([this.children[1].value,
+				  this.children[3].value,
+				  this.children[5].value,
+				  this.children[7].value]);
 	    });
-	    console.log("updateValue dict:");
+	console.log("updateValue:");
 	console.log(updateValue);
     }
     else if (id==="Price") {
@@ -143,9 +147,6 @@ var addTime = function() {
     '<input type="time" name="to' + timeLength + '" class="form-control">' +
     '<div class="input-group-addon">on</div>' +
     '<select class="form-control" name="day' + timeLength + '">' +
-    '<option>Everyday</option>' +
-    '<option>Weekdays</option>' +
-    '<option>Weekends</option>' +
     '<option>Monday</option>' +
     '<option>Tuesday</option>' +
     '<option>Wednesday</option>' +
@@ -154,7 +155,8 @@ var addTime = function() {
     '<option>Saturday</option>' +
     '<option>Sunday</option>' +
     '</select>' +
-    '<div onclick="convertToInputHoursSpecific(this, this.parentNode, ' + timeLength + ')" class="input-group-addon">Click here if these hours are for a specific part of the gym<div></div></div>' +
+    '<div class="input-group-addon">for</div>' + 
+    '<input type="section" class="form-control" placeholder="Section">' +
     '<div onclick="removeRow(this.parentElement.id, &#34;time&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>' +
     '</div>';
     document.getElementById("time").appendChild(node);

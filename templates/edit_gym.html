@@ -112,9 +112,6 @@ Hours:
       <input type="time" name="to0" class="form-control hours-info-to" value={{time[1]}}>
       <div class="input-group-addon">on</div>
       <select class="form-control {{key}} hours-info-day" name="day0">
-	<option>Everyday</option>
-	<option>Weekdays</option>
-	<option>Weekends</option>
 	<option>Monday</option>
 	<option>Tuesday</option>
 	<option>Wednesday</option>
@@ -123,6 +120,8 @@ Hours:
 	<option>Saturday</option>
 	<option>Sunday</option>
       </select>
+      <div class="input-group-addon">for</div>
+      <input type="section" class="form-control" value="{{time[2]}}">
       <div onclick="removeRow(this.parentElement.id, 'time');{{removeExpand}}" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
     </div>
     <script>
