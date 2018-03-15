@@ -359,7 +359,7 @@ def browsegyms():
                 gymNotable = []
                 notableThings = c.fetchall()
                 for notableThing in notableThings:
-                    gymNotable.append[notableThing[1]]
+                    gymNotable.append(notableThing[1])
                 gym = {
                     "id": result[IDCOL],
                     "name": result[NAMECOL],
