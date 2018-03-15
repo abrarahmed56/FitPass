@@ -33,7 +33,7 @@ sendGym = false;
 <h2>Amenities:</h2>
 <input type="hidden" id="gymId" value="{{gymId}}">
 <form>
-{% set index = 1 %}
+{% set count = 1 %}
 <div class="form-group">
   <div id="equipment">
     <datalist id="equipments">
@@ -42,13 +42,14 @@ sendGym = false;
 	{% endfor %}
     </datalist>
     {% for key in equipment %}
-    <div class="input-group equipment" id="equipment{{index}}">
+    <div class="input-group equipment" id="equipment{{count}}">
       <div class="input-group-addon">Equipment</div>
-      <input list="equipments" name="equipmentName{{index}}" class="form-control" value="{{key}}">
+      <input list="equipments" name="equipmentName{{count}}" class="form-control" value="{{key}}">
       <div class="input-group-addon">Amount</div>
-      <input name="equipmentAmount{{index}}" class="form-control" type="number" value="{{equipment[key]}}">
+      <input name="equipmentAmount{{count}}" class="form-control" type="number" value="{{equipment[key]}}">
       <div onclick="removeRow(this.parentElement.id, 'equipment')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
     </div>
+    {% set count = count + 1 %}
     {% endfor %}
   </div>
   <button onclick="addEquipment()" type="button" class="btn btn-default">+Add another piece of equipment</button>
@@ -60,21 +61,23 @@ sendGym = false;
   <div class="form-group">
     Prices:
     <div id="prices">
+    {% set count = 1 %}
     {% for price in gymPrices %}
-      <div class="input-group price" id="price1">
-	<div class="input-group-addon">$</div><input class="form-control" name="priceValue1" type="number" value={{price[0]}}>
+      <div class="input-group price" id="price{{count}}">
+	<div class="input-group-addon">$</div><input class="form-control" name="priceValue{{count}}" type="number" value={{price[0]}}>
 	<div class="input-group-addon">per</div>
-	<select name="priceUnit1" class="form-control {{price[1]}}">
+	<select name="priceUnit{{count}}" class="form-control {{price[1]}}">
 	  <option>month</option>
 	  <option>class</option>
 	</select>
 	<div class="input-group-addon">for</div>
-	<input class="form-control" name="priceTarget1" placeholder="ie, students, seniors, group, etc." value="{{price[2]}}">
+	<input class="form-control" name="priceTarget{{count}}" placeholder="ie, students, seniors, group, etc." value="{{price[2]}}">
 	<div onclick="removeRow(this.parentElement.id, 'price')" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
       </div>
       <script>
 	$(".{{price[1]}}").val("{{price[1]}}")
       </script>
+    {% set count = count + 1 %}
     {% endfor %}
     </div>
     <button onclick="addPrice()" type="button" class="btn btn-default">+Add another pricing</button>
@@ -96,6 +99,7 @@ Hours:
 <form id="hours">
 <div class="form-group">
   <div id="time">
+    {% set count = 1 %}
     {% for key in hours %}
     {% for time in hours[key] %}
     {% if key=="Weekends" or key=="Weekdays" or key=="Everyday" %}
@@ -103,7 +107,7 @@ Hours:
     <div class="input-group time" id="expand{{key}}">
     {% set removeExpand = "removeExpand('expand"+key+"button')" %}
     {% else %}
-    <div class="input-group time">
+    <div class="input-group time" id="time{{count}}">
     {% set removeExpand = "" %}
     {% endif %}
       <div class="input-group-addon">From </div>
@@ -128,6 +132,7 @@ Hours:
       $(".{{key}}").val("{{key}}");
     </script>
     {% endfor %}
+    {% set count = count + 1 %}
     {% endfor %}
   </div>
   <button onclick="addTime()" type="button" class="btn btn-default">+Add another time range</button>
@@ -141,17 +146,21 @@ Hours:
 Notable Things (up to 5):
 <div class="form-group">
   <div id="fax">
-    <input class="form-control notable">
-    <input class="form-control notable">
-    <input class="form-control notable">
-    <input class="form-control notable">
-    <input class="form-control notable">
+    <input class="form-control notable" value="{{notableThings[0]}}">
+    <input class="form-control notable" value="{{notableThings[1]}}">
+    <input class="form-control notable" value="{{notableThings[2]}}">
+    <input class="form-control notable" value="{{notableThings[3]}}">
+    <input class="form-control notable" value="{{notableThings[4]}}">
     <!--<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>-->
     Other Misc/Extras:
-    <div class="input-group detail" id="detail1">
-      <input class="form-control">
+    {% set count = 1 %}
+    {% for miscThing in miscInfo %}
+    <div class="input-group detail" id="detail{{count}}">
+      <input class="form-control" value="{{miscThing}}">
       <div onclick="removeRow(this.parentElement.id, 'detail');" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
     </div>
+    {% set count = count + 1 %}
+    {% endfor %}
   </div>
 </div>
 <button onclick="addDetail()" type="button" class="btn btn-default">+Add another detail</button>

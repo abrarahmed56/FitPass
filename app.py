@@ -891,7 +891,17 @@ def edit_gym(gym_id=None):
             for gym_price in gym_prices:
                 gym_prices_list.append([gym_price[1], gym_price[2], gym_price[3]])
             send_gym = False
-        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym, equipmentList=equipmentList)
+            c.execute("SELECT * FROM GymNotable WHERE GymId=%s", (gym_id,))
+            gym_notable_stuff = c.fetchall()
+            notable_things = []
+            for gym_notable_thing in gym_notable_stuff:
+                notable_things.append(gym_notable_thing[1])
+            c.execute("SELECT * FROM GymMisc WHERE GymId=%s", (gym_id,))
+            gym_misc_stuff = c.fetchall()
+            misc_info = []
+            for gym_misc_thing in gym_misc_stuff:
+                misc_info.append(gym_misc_thing[1])
+        return render_template("edit_gym.html", managerLoggedIn=manager_logged_in, gymId=gym_id, misc=misc, equipment=equipment, hours=hours, gymImgs=gym_imgs, gymPrices=gym_prices_list, sendGym=send_gym, equipmentList=equipmentList, notableThings=notable_things, miscInfo=misc_info)
 
 def dictionarifyHours(monday, tuesday, wednesday, thursday, friday, saturday, sunday):
     hours = {}
@@ -1348,6 +1358,30 @@ def update_info():
                         pricesIndex = pricesIndex + 1
                         gymPriceValue = request.form.get("priceValue"+str(pricesIndex), None)
                         gymPriceUnit = request.form.get("priceUnit"+str(pricesIndex), None)
+            return return_message
+        elif infotype == "Misc":
+            misc_info = json.loads(request.form['text'])
+            return_message = "Update Successful!"
+            c.execute("DELETE FROM GymNotable WHERE GymId=%s", (gym_id,))
+            c.execute("DELETE FROM GymMisc WHERE GymId=%s", (gym_id,))
+            print "before notable"
+            for x in range(0, 5):
+                notable_thing = misc_info[x]
+                if notable_thing != "":
+                    print "Notable thing:"
+                    print notable_thing
+                    c.execute("INSERT INTO GymNotable VALUES(%s, %s)", (gym_id, notable_thing))
+                else:
+                    return_message = "Update successful for non-empty values"
+            misc_info = misc_info[5:]
+            print "before misc"
+            for piece_of_misc_info in misc_info:
+                if piece_of_misc_info != "":
+                    print "misc info"
+                    print piece_of_misc_info
+                    c.execute("INSERT INTO GymMisc VALUES(%s, %s)", (gym_id, piece_of_misc_info))
+                else:
+                    return_message = "Update successful for non-empty values"
             return return_message
         else:
             info = request.form['text']

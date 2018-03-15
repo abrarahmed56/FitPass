@@ -51,6 +51,23 @@ var updateInfo = function(id, sendGym) {
 		index = index + 3
 	    });
     }
+    else if (id==="Misc") {
+	var updateValue = []
+	var $notableThings = $(".notable");
+	console.log("notable");
+	$notableThings.slice(0, 5).each(function() {
+		console.log(this.value);
+		updateValue.push(this.value)
+	    });
+	var $details = $(".detail");
+	$details.each(function() {
+		if (this.children[0].value != "") {
+		    updateValue.push(this.children[0].value)
+		}
+	    });
+	console.log("updateValue");
+	console.log(updateValue);
+    }
     else {
 	var updateValue = document.getElementById(id).value;
     }
@@ -141,11 +158,11 @@ var addDetail = function() {
     var deetLength = document.getElementsByClassName("detail").length + 1;
     var node = document.createElement("div");
     node.className = "input-group detail";
-    node.id="misc" + deetLength;
+    node.id="detail" + deetLength;
     var inp = document.createElement("input");
     inp.className = "form-control";
     var rmBtn = document.createElement("div");
-    rmBtn.setAttribute("onclick", "removeRow(this.parentElement.id, 'misc" + deetLength + "');");
+    rmBtn.setAttribute("onclick", "removeRow(this.parentElement.id, 'detail');");
     rmBtn.className = "input-group-addon btn-default";
     rmBtn.role = "button";
     var spm = document.createElement("span");
