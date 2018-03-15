@@ -171,8 +171,7 @@ Notable Things (up to 5):
   Images/Videos:<br>
   {% for gymImg in gymImgs %}
   <div id="{{gymImg|replace('.', '')}}">
-    <img src="../static/{{gymId}}/{{gymImg}}"><br>
-    <button type="button" class="btn btn-default">Resize</button>
+    <img src="../static/{{gymId}}/{{gymImg}}" width="300px"><br>
     <button type="button" class="btn btn-default" onclick="removeImage('{{gymImg}}');">Remove</button>
     <br>
     <br>

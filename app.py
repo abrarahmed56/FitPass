@@ -10,6 +10,7 @@ from werkzeug import secure_filename
 import os
 import datetime
 import geocoder
+from PIL import Image
 
 UPLOAD_FOLDER = './static/'
 ALLOWED_EXTENSIONS = set(['png', 'bmp', 'jpg'])
@@ -938,22 +939,49 @@ def uploadImages():
         while file and allowed_file(file.filename):
             print "file okay"
             print count
+            print file.filename
             filename = secure_filename(file.filename)
+            print filename
             gym_dir = os.path.join(app.config["UPLOAD_FOLDER"], request.form['gymId'])
             print "okay here0"
             if not os.path.exists(gym_dir):
                 os.makedirs(gym_dir)
             print "okay here1"
             file.save(os.path.join(gym_dir, filename))
+            im = Image.open(os.path.join(gym_dir, filename))
+            width = im.size[0]
+            height = im.size[1]
+            print "width:"
+            print width
+            print "height:"
+            print height
+            if width > height:
+                newWidth = 100
+                newHeight = height / (width / 100)
+                print "newWidth:"
+                print newWidth
+                print "newHeight"
+                print newHeight
+                im = im.resize((newWidth, newHeight), Image.ANTIALIAS)
+                im.save(os.path.join(gym_dir, filename))
+            else:
+                newHeight = 100
+                newWidth = width / (height / 100)
+                print "newWidth:"
+                print newWidth
+                print "newHeight"
+                print newHeight
+                im = im.resize((newWidth, newHeight), Image.ANTIALIAS)
+                im.save(os.path.join(gym_dir, filename))
             print "okay here2"
             picIndex = picIndex + 1
             print "okay here3"
+            count = count + 1
             try:
                 file = request.files['pic' + str(picIndex)]
             except:
                 break
             print "okay here4"
-            count = count + 1
         print "finished while"
         if count == 0:
             flash_message = "File upload unsuccessful"
