@@ -48,12 +48,16 @@
     {{userUpdates|safe}}
     {% endif %}-->
     {% for image in gymImgs %}
-    <img src="../static/{{gymId}}/{{image}}">
+    <img src="../static/{{gymId}}/{{image}}" width="300px">
     {% endfor %}
     <br>
     <strong>Prices</strong>:<br>
     {% for gymPrice in gymPrices %}
+    {% if gymPrice[2] == 'default' %}
     {{gymPrice[0]}} per {{gymPrice[1]}}<br>
+    {% else %}
+    {{gymPrice[0]}} per {{gymPrice[1]}} for {{gymPrice[2]}}<br>
+    {% endif %}
     {% endfor %}
     {% if userPrices %}
     {% for user in userPrices %}

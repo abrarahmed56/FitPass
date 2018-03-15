@@ -1086,16 +1086,16 @@ def gympage(id):
         gym_prices = c.fetchall()
         gym_prices_list = []
         for gym_price in gym_prices:
-            gym_prices_list.append([gym_price[1], gym_price[2]])
+            gym_prices_list.append([gym_price[1], gym_price[2], gym_price[3]])
         misc = gym[MISCCOL]
         c.execute("SELECT * FROM GymHours WHERE GymId=%s", (id,))
         gym_hours = c.fetchall()
         gym_hours_dict = {}
         for gym_hour in gym_hours:
             if gym_hour[1] in gym_hours_dict:
-                gym_hours_dict[gym_hour[1]].append([gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]])
+                gym_hours_dict[gym_hour[1]].append([gym_hour[2], gym_hour[3]])
             else:
-                gym_hours_dict[gym_hour[1]] = [[gym_hour[2][:2] + ":" + gym_hour[2][2:], gym_hour[3][:2] + ":" + gym_hour[3][2:]]]
+                gym_hours_dict[gym_hour[1]] = [[gym_hour[2], gym_hour[3]]]
         hours = gym_hours_dict
         c.execute("SELECT * FROM GymEquipment WHERE GymId=%s", (id,))
         gym_equipment = c.fetchall()
