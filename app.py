@@ -931,16 +931,35 @@ def allowed_file(filename):
 def uploadImages():
     #TODO ALLOW USERS TO INPUT INFO
     if 'manager_id' in session and 'pic1' in request.files and 'gymId' in request.form:
-        file = request.files['pic1']
-        if file and allowed_file(file.filename):
+        picIndex = 1
+        file = request.files['pic' + str(picIndex)]
+        flash_message = "File uploaded successfully"
+        count = 0
+        while file and allowed_file(file.filename):
+            print "file okay"
+            print count
             filename = secure_filename(file.filename)
             gym_dir = os.path.join(app.config["UPLOAD_FOLDER"], request.form['gymId'])
+            print "okay here0"
             if not os.path.exists(gym_dir):
                 os.makedirs(gym_dir)
+            print "okay here1"
             file.save(os.path.join(gym_dir, filename))
-            flash("File uploaded successfully")
-        else:
-            flash("File upload unsuccessful")
+            print "okay here2"
+            picIndex = picIndex + 1
+            print "okay here3"
+            try:
+                file = request.files['pic' + str(picIndex)]
+            except:
+                break
+            print "okay here4"
+            count = count + 1
+        print "finished while"
+        if count == 0:
+            flash_message = "File upload unsuccessful"
+        elif count >= 2:
+            flash_message = "Files uploaded successfully!"
+        flash(flash_message)
         return redirect(url_for("edit_gym"))
     else:
         return "Stop trying to break the site bro"
