@@ -138,7 +138,24 @@ Hours:
 <!--Requirements: <textarea class="form-control" id="Requirements">{{requirements|replace('"', '')|replace('&#34;', '"')}}</textarea>
 <button class="btn" onclick="updateInfo('Requirements', sendGym)">Update</button><br>-->
 <br>
-Misc/Extras:<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>
+Notable Things (up to 5):
+<div class="form-group">
+  <div id="fax">
+    <input class="form-control notable">
+    <input class="form-control notable">
+    <input class="form-control notable">
+    <input class="form-control notable">
+    <input class="form-control notable">
+    <!--<textarea class="form-control" id="Misc">{{misc|replace('"', '')|replace('&#34;', '"')}}</textarea>-->
+    Other Misc/Extras:
+    <div class="input-group detail" id="detail1">
+      <input class="form-control">
+      <div onclick="removeRow(this.parentElement.id, 'detail');" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>
+    </div>
+  </div>
+</div>
+<button onclick="addDetail()" type="button" class="btn btn-default">+Add another detail</button>
+<br>
 <button class="btn" type="button" onclick="updateInfo('Misc', sendGym)">Update</button><br>
 <br>
 <form action="/uploadImages" method="POST" enctype="multipart/form-data">

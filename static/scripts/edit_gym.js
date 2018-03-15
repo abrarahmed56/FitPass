@@ -137,6 +137,25 @@ var addEquipment = function() {
     '<div onclick="removeRow(this.parentElement.id, &#34;equipment&#34;)" class="input-group-addon btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></div>';
     document.getElementById("equipment").appendChild(node);
 };
+var addDetail = function() {
+    var deetLength = document.getElementsByClassName("detail").length + 1;
+    var node = document.createElement("div");
+    node.className = "input-group detail";
+    node.id="misc" + deetLength;
+    var inp = document.createElement("input");
+    inp.className = "form-control";
+    var rmBtn = document.createElement("div");
+    rmBtn.setAttribute("onclick", "removeRow(this.parentElement.id, 'misc" + deetLength + "');");
+    rmBtn.className = "input-group-addon btn-default";
+    rmBtn.role = "button";
+    var spm = document.createElement("span");
+    spm.className = "glyphicon glyphicon-remove";
+    spm.setAttribute("aria-hidden", "true");
+    rmBtn.appendChild(spm);
+    node.appendChild(inp);
+    node.appendChild(rmBtn);
+    document.getElementById("fax").appendChild(node);
+};
 var addTime = function() {
     var timeLength = document.getElementsByClassName("time").length + 1;
     var node = document.createElement("div");
@@ -214,6 +233,12 @@ var removeRow = function(id, className) {
 	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
 	    document.getElementsByClassName(className)[i].children[1].id = "equipmentName" + (i+1);
 	    document.getElementsByClassName(className)[i].children[1].id = "equipmentAmount" + (i+1);
+	    document.getElementsByClassName(className)[i].id = className + (i+1);
+	}
+    }
+    else if (className==="detail") {
+	for (var i=0; i<document.getElementsByClassName(className).length; i++) {
+	    document.getElementsByClassName(className)[i].children[0].id = "detail" + (i+1);
 	    document.getElementsByClassName(className)[i].id = className + (i+1);
 	}
     }
